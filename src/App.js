@@ -12,9 +12,10 @@ function App() {
 
   // 🚀 Fetch Posts from Supabase on Load
   useEffect(() => {
+    // Initial fetch of posts
     const fetchPosts = async () => {
       const { data, error } = await supabase
-        .from('messages') // Table name in Supabase
+        .from('messages')
         .select('*')
         .order('created_at', { ascending: false });
 
@@ -24,14 +25,31 @@ function App() {
 
     fetchPosts();
 
-    // Subscribe to real-time updates
-    const subscription = supabase
-      .channel('realtime-messages')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'messages' }, fetchPosts)
+    // Set up real-time subscription for posts
+    const postsSubscription = supabase
+      .channel('posts-channel')
+      .on('postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'messages'
+        },
+        async (payload) => {
+          // Fetch all posts again when any change occurs
+          const { data, error } = await supabase
+            .from('messages')
+            .select('*')
+            .order('created_at', { ascending: false });
+
+          if (!error && data) {
+            setPosts(data);
+          }
+        })
       .subscribe();
 
+    // Cleanup subscriptions
     return () => {
-      supabase.removeChannel(subscription);
+      supabase.removeChannel(postsSubscription);
     };
   }, []);
 
@@ -45,7 +63,7 @@ function App() {
       imageUrl = await handleImageUpload(imageFile);
     }
 
-    const { data, error } = await supabase
+    const { error } = await supabase
       .from('messages')
       .insert([{
         text: newPost,
@@ -56,10 +74,24 @@ function App() {
     if (error) {
       console.error('Error adding post:', error);
     } else {
+      // Fetch posts again to refresh the list
+      fetchPosts();
+      // Just clear the form
       setNewPost('');
       setImageFile(null);
       setImagePreview(null);
     }
+  };
+
+  // Add this new function to fetch posts
+  const fetchPosts = async () => {
+    const { data, error } = await supabase
+      .from('messages')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (error) console.error('Error fetching posts:', error);
+    else setPosts(data);
   };
 
   // 🚀 Handle Upvotes
@@ -74,7 +106,12 @@ function App() {
       .update({ upvotes: updatedUpvotes })
       .eq('id', postId);
 
-    if (error) console.error('Error updating votes:', error);
+    if (error) {
+      console.error('Error updating votes:', error);
+    } else {
+      // Fetch posts again to refresh the list
+      fetchPosts();
+    }
   };
 
   // Add this new function to handle image upload
@@ -219,8 +256,8 @@ function CommentSection({ postId }) {
   const [newComment, setNewComment] = useState('');
   const [isExpanded, setIsExpanded] = useState(false);
 
-  // 🚀 Fetch Comments for Post
   useEffect(() => {
+    // Initial fetch of comments
     const fetchComments = async () => {
       const { data, error } = await supabase
         .from('comments')
@@ -229,23 +266,54 @@ function CommentSection({ postId }) {
         .order('created_at', { ascending: true });
 
       if (error) console.error('Error fetching comments:', error);
-      else setComments(data);
+      else setComments(data || []);
     };
 
     fetchComments();
+
+    // Set up real-time subscription for comments
+    const commentsSubscription = supabase
+      .channel(`comments-channel-${postId}`)
+      .on('postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'comments',
+          filter: `post_id=eq.${postId}`
+        },
+        async (payload) => {
+          // Fetch updated comments when any change occurs
+          const { data, error } = await supabase
+            .from('comments')
+            .select('*')
+            .eq('post_id', postId)
+            .order('created_at', { ascending: true });
+
+          if (!error && data) {
+            setComments(data);
+          }
+        })
+      .subscribe();
+
+    // Cleanup subscription
+    return () => {
+      supabase.removeChannel(commentsSubscription);
+    };
   }, [postId]);
 
-  // 🚀 Add New Comment
   const handleSubmitComment = async (e) => {
     e.preventDefault();
     if (!newComment.trim()) return;
 
-    const { data, error } = await supabase
+    const { error } = await supabase
       .from('comments')
       .insert([{ post_id: postId, text: newComment }]);
 
-    if (error) console.error('Error adding comment:', error);
-    else setNewComment('');
+    if (error) {
+      console.error('Error adding comment:', error);
+    } else {
+      setNewComment(''); // Just clear the input
+    }
   };
 
   return (
