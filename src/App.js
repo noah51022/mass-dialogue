@@ -5,29 +5,27 @@ import './App.css';
 function App() {
   const [posts, setPosts] = useState([]);
   const [newPost, setNewPost] = useState('');
-  const [votedPosts, setVotedPosts] = useState(new Set()); // Tracks upvoted posts
+  const [imageFile, setImageFile] = useState(null);
+  const [imagePreview, setImagePreview] = useState(null);
 
   // 🚀 Fetch Posts from Supabase on Load
   useEffect(() => {
     const fetchPosts = async () => {
       const { data, error } = await supabase
-        .from('messages')
+        .from('messages') // Table name in Supabase
         .select('*')
         .order('created_at', { ascending: false });
 
-      if (error) console.error('❌ Error fetching posts:', error);
+      if (error) console.error('Error fetching posts:', error);
       else setPosts(data);
     };
 
     fetchPosts();
 
-    // ✅ Subscribe to real-time updates for new messages
+    // Subscribe to real-time updates
     const subscription = supabase
       .channel('realtime-messages')
-      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, (payload) => {
-        console.log('📩 New message received:', payload.new);
-        setPosts((prevPosts) => [payload.new, ...prevPosts]);
-      })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'messages' }, fetchPosts)
       .subscribe();
 
     return () => {
@@ -35,68 +33,81 @@ function App() {
     };
   }, []);
 
-  // 🚀 Submit a New Message
+  // 🚀 Submit a New Post
   const handleSubmitPost = async (e) => {
     e.preventDefault();
     if (!newPost.trim()) return;
 
-    // ✅ Insert new message into Supabase
+    let imageUrl = null;
+    if (imageFile) {
+      imageUrl = await handleImageUpload(imageFile);
+    }
+
     const { data, error } = await supabase
       .from('messages')
-      .insert([{ text: newPost, upvotes: 0 }])
-      .select();
+      .insert([{
+        text: newPost,
+        upvotes: 0,
+        image_url: imageUrl
+      }]);
 
     if (error) {
-      console.error('❌ Error adding post:', error);
-      alert('Error posting message. Check Supabase setup.');
-      return;
+      console.error('Error adding post:', error);
+    } else {
+      setNewPost('');
+      setImageFile(null);
+      setImagePreview(null);
     }
-
-    console.log('✅ New Post Added:', data);
-
-    // ✅ Update UI instantly
-    if (data && data.length > 0) {
-      setPosts((prevPosts) => [data[0], ...prevPosts]);
-    }
-
-    setNewPost(''); // Clear input field
   };
 
-  // 🚀 Handle Upvote (Toggle Upvote)
-  const handleUpvote = async (postId) => {
+  // 🚀 Handle Upvotes
+  const handleVote = async (postId, voteType) => {
     const post = posts.find(post => post.id === postId);
     if (!post) return;
 
-    const isUpvoted = votedPosts.has(postId);
-    const newUpvotes = isUpvoted ? post.upvotes - 1 : post.upvotes + 1;
+    const updatedUpvotes = voteType === 'up' ? post.upvotes + 1 : post.upvotes;
 
-    // ✅ Update in Supabase
     const { error } = await supabase
       .from('messages')
-      .update({ upvotes: newUpvotes })
+      .update({ upvotes: updatedUpvotes })
       .eq('id', postId);
 
+    if (error) console.error('Error updating votes:', error);
+  };
+
+  // Add this new function to handle image upload
+  const handleImageUpload = async (file) => {
+    const fileExt = file.name.split('.').pop();
+    const fileName = `${Math.random()}.${fileExt}`;
+    const filePath = `${fileName}`;
+
+    const { data, error } = await supabase.storage
+      .from('post-images')
+      .upload(filePath, file);
+
     if (error) {
-      console.error('❌ Error updating votes:', error);
-      return;
+      console.error('Error uploading image:', error);
+      return null;
     }
 
-    console.log(`✅ ${isUpvoted ? 'Removed Upvote' : 'Upvoted'} post ${postId}`);
+    const { data: { publicUrl } } = supabase.storage
+      .from('post-images')
+      .getPublicUrl(filePath);
 
-    // ✅ Update UI instantly
-    setPosts((prevPosts) =>
-      prevPosts.map((p) =>
-        p.id === postId ? { ...p, upvotes: newUpvotes } : p
-      )
-    );
+    return publicUrl;
+  };
 
-    // ✅ Toggle upvote state
-    setVotedPosts((prevVoted) => {
-      const updatedVotes = new Set(prevVoted);
-      if (isUpvoted) updatedVotes.delete(postId);
-      else updatedVotes.add(postId);
-      return updatedVotes;
-    });
+  // Add this new function to handle image selection
+  const handleImageSelect = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setImageFile(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result);
+      };
+      reader.readAsDataURL(file);
+    }
   };
 
   return (
@@ -114,61 +125,141 @@ function App() {
               placeholder="What's on your mind?"
               rows={4}
             />
+            <div className="image-upload-container">
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handleImageSelect}
+                id="image-upload"
+                className="image-input"
+              />
+              <label htmlFor="image-upload" className="image-upload-label">
+                📎 Add Image
+              </label>
+              {imagePreview && (
+                <div className="image-preview">
+                  <img src={imagePreview} alt="Preview" />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setImageFile(null);
+                      setImagePreview(null);
+                    }}
+                    className="remove-image"
+                  >
+                    ✕
+                  </button>
+                </div>
+              )}
+            </div>
             <button type="submit">Post Message</button>
           </form>
         </div>
 
         <div className="posts-list">
-          {posts.length > 0 ? (
-            posts.map((post) => (
-              <div key={post.id} className="post-card">
-                <div className="post-header">
-                  <span className="post-author">Anonymous User</span>
-                  <span className="post-timestamp">{new Date(post.created_at).toLocaleString()}</span>
-                </div>
-                <div className="post-content">{post.text}</div>
-                <div className="post-actions">
-                  <div 
-                    className="vote-buttons" 
-                    style={{ 
-                      display: 'flex', 
-                      alignItems: 'center', 
-                      gap: '10px', 
-                      flexDirection: 'row' 
-                    }}
-                  >
-                    <span 
-                      className="vote-count upvote-count" 
-                      style={{ 
-                        fontSize: '18px', 
-                        fontWeight: 'bold', 
-                        color: votedPosts.has(post.id) ? '#0f0' : '#888' 
-                      }}
-                    >
-                      {post.upvotes}
-                    </span>
-                    <span>Upvotes</span>
-                    <button
-                      onClick={() => handleUpvote(post.id)}
-                      className="vote-button upvote-button"
-                      title="Upvote"
-                      style={{ 
-                        cursor: 'pointer', 
-                        fontSize: '16px', 
-                        padding: '5px'
-                      }}
-                    >
-                      ➕
-                    </button>
+          {posts.map(post => (
+            <div key={post.id} className="post-card">
+              <div className="post-header">
+                <span className="post-author">Anonymous User</span>
+                <span className="post-timestamp">{new Date(post.created_at).toLocaleString()}</span>
+              </div>
+              <div className="post-content">
+                {post.text}
+                {post.image_url && (
+                  <div className="post-image">
+                    <img src={post.image_url} alt="Post attachment" />
                   </div>
+                )}
+              </div>
+              <div className="post-actions">
+                <div className="vote-buttons">
+                  <button
+                    onClick={() => handleVote(post.id, 'up')}
+                    className="vote-button upvote-button"
+                    title="Upvote"
+                  >
+                    ↑
+                  </button>
+                  <span className="vote-count upvote-count">{post.upvotes}</span>
                 </div>
               </div>
-            ))
-          ) : (
-            <p>No messages yet. Be the first to post!</p>
-          )}
+              <CommentSection postId={post.id} />
+            </div>
+          ))}
         </div>
       </main>
+    </div>
+  );
+}
+
+function CommentSection({ postId }) {
+  const [comments, setComments] = useState([]);
+  const [newComment, setNewComment] = useState('');
+  const [isExpanded, setIsExpanded] = useState(false);
+
+  // 🚀 Fetch Comments for Post
+  useEffect(() => {
+    const fetchComments = async () => {
+      const { data, error } = await supabase
+        .from('comments')
+        .select('*')
+        .eq('post_id', postId)
+        .order('created_at', { ascending: true });
+
+      if (error) console.error('Error fetching comments:', error);
+      else setComments(data);
+    };
+
+    fetchComments();
+  }, [postId]);
+
+  // 🚀 Add New Comment
+  const handleSubmitComment = async (e) => {
+    e.preventDefault();
+    if (!newComment.trim()) return;
+
+    const { data, error } = await supabase
+      .from('comments')
+      .insert([{ post_id: postId, text: newComment }]);
+
+    if (error) console.error('Error adding comment:', error);
+    else setNewComment('');
+  };
+
+  return (
+    <div className="comments-section">
+      <button
+        onClick={() => setIsExpanded(!isExpanded)}
+        className="toggle-comments"
+      >
+        {comments.length} Comments
+      </button>
+
+      {isExpanded && (
+        <>
+          <div className="comments-list">
+            {comments.map(comment => (
+              <div key={comment.id} className="comment">
+                <div className="comment-header">
+                  <span className="comment-author">Anonymous User</span>
+                  <span className="comment-timestamp">{new Date(comment.created_at).toLocaleString()}</span>
+                </div>
+                <div className="comment-content">{comment.text}</div>
+              </div>
+            ))}
+          </div>
+
+          <form onSubmit={handleSubmitComment} className="comment-form">
+            <input
+              type="text"
+              value={newComment}
+              onChange={(e) => setNewComment(e.target.value)}
+              placeholder="Add a comment..."
+            />
+            <button type="submit">Comment</button>
+          </form>
+        </>
+      )}
     </div>
   );
 }
