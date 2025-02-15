@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from './supabaseClient';
+import ReportPage from './ReportGenerate'; // Update import path
 import './App.css';
 
 function App() {
@@ -7,6 +8,7 @@ function App() {
   const [newPost, setNewPost] = useState('');
   const [imageFile, setImageFile] = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
+  const [activeTab, setActiveTab] = useState('forum'); // Add this for tab state
 
   // 🚀 Fetch Posts from Supabase on Load
   useEffect(() => {
@@ -114,79 +116,99 @@ function App() {
     <div className="App">
       <header className="forum-header">
         <h1>Mass Dialogue Forum</h1>
+        <div className="tab-navigation">
+          <button
+            className={`tab-button ${activeTab === 'forum' ? 'active' : ''}`}
+            onClick={() => setActiveTab('forum')}
+          >
+            Forum
+          </button>
+          <button
+            className={`tab-button ${activeTab === 'report' ? 'active' : ''}`}
+            onClick={() => setActiveTab('report')}
+          >
+            Generate Report
+          </button>
+        </div>
       </header>
 
       <main className="forum-content">
-        <div className="post-form">
-          <form onSubmit={handleSubmitPost}>
-            <textarea
-              value={newPost}
-              onChange={(e) => setNewPost(e.target.value)}
-              placeholder="What's on your mind?"
-              rows={4}
-            />
-            <div className="image-upload-container">
-              <input
-                type="file"
-                accept="image/*"
-                onChange={handleImageSelect}
-                id="image-upload"
-                className="image-input"
-              />
-              <label htmlFor="image-upload" className="image-upload-label">
-                📎 Add Image
-              </label>
-              {imagePreview && (
-                <div className="image-preview">
-                  <img src={imagePreview} alt="Preview" />
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setImageFile(null);
-                      setImagePreview(null);
-                    }}
-                    className="remove-image"
-                  >
-                    ✕
-                  </button>
+        {activeTab === 'forum' ? (
+          <>
+            <div className="post-form">
+              <form onSubmit={handleSubmitPost}>
+                <textarea
+                  value={newPost}
+                  onChange={(e) => setNewPost(e.target.value)}
+                  placeholder="What's on your mind?"
+                  rows={4}
+                />
+                <div className="image-upload-container">
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleImageSelect}
+                    id="image-upload"
+                    className="image-input"
+                  />
+                  <label htmlFor="image-upload" className="image-upload-label">
+                    📎 Add Image
+                  </label>
+                  {imagePreview && (
+                    <div className="image-preview">
+                      <img src={imagePreview} alt="Preview" />
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setImageFile(null);
+                          setImagePreview(null);
+                        }}
+                        className="remove-image"
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  )}
                 </div>
-              )}
+                <button type="submit">Post Message</button>
+              </form>
             </div>
-            <button type="submit">Post Message</button>
-          </form>
-        </div>
 
-        <div className="posts-list">
-          {posts.map(post => (
-            <div key={post.id} className="post-card">
-              <div className="post-header">
-                <span className="post-author">Anonymous User</span>
-                <span className="post-timestamp">{new Date(post.created_at).toLocaleString()}</span>
-              </div>
-              <div className="post-content">
-                {post.text}
-                {post.image_url && (
-                  <div className="post-image">
-                    <img src={post.image_url} alt="Post attachment" />
+            <div className="posts-list">
+              {posts.map(post => (
+                <div key={post.id} className="post-card">
+                  <div className="post-header">
+                    <span className="post-author">Anonymous User</span>
+                    <span className="post-timestamp">{new Date(post.created_at).toLocaleString()}</span>
                   </div>
-                )}
-              </div>
-              <div className="post-actions">
-                <div className="vote-buttons">
-                  <button
-                    onClick={() => handleVote(post.id, 'up')}
-                    className="vote-button upvote-button"
-                    title="Upvote"
-                  >
-                    ↑
-                  </button>
-                  <span className="vote-count upvote-count">{post.upvotes}</span>
+                  <div className="post-content">
+                    {post.text}
+                    {post.image_url && (
+                      <div className="post-image">
+                        <img src={post.image_url} alt="Post attachment" />
+                      </div>
+                    )}
+                  </div>
+                  <div className="post-actions">
+                    <div className="vote-buttons">
+                      <button
+                        onClick={() => handleVote(post.id, 'up')}
+                        className="vote-button upvote-button"
+                        title="Upvote"
+                      >
+                        ↑
+                      </button>
+                      <span className="vote-count upvote-count">{post.upvotes}</span>
+                    </div>
+                  </div>
+                  <CommentSection postId={post.id} />
                 </div>
-              </div>
-              <CommentSection postId={post.id} />
+              ))}
             </div>
-          ))}
-        </div>
+          </>
+        ) : (
+          <ReportPage />
+        )}
       </main>
     </div>
   );

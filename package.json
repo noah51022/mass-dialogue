@@ -8,6 +8,8 @@
     "@testing-library/jest-dom": "^6.6.3",
     "@testing-library/react": "^16.2.0",
     "@testing-library/user-event": "^13.5.0",
+    "dotenv": "^16.4.7",
+    "openai": "^4.85.1",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-scripts": "5.0.1",
@@ -36,5 +38,12 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
+  },
+  "devDependencies": {
+    "crypto-browserify": "^3.12.1",
+    "node-polyfill-webpack-plugin": "^4.1.0",
+    "os-browserify": "^0.3.0",
+    "path-browserify": "^1.0.1",
+    "react-app-rewired": "^2.2.1"
   }
 }
