@@ -5,7 +5,7 @@ import './App.css';
 function App() {
   const [posts, setPosts] = useState([]);
   const [newPost, setNewPost] = useState('');
-  const [votedPosts, setVotedPosts] = useState(new Set()); // Tracks if a user has voted
+  const [votedPosts, setVotedPosts] = useState(new Set()); // Tracks upvoted posts
 
   // 🚀 Fetch Posts from Supabase on Load
   useEffect(() => {
@@ -62,14 +62,13 @@ function App() {
     setNewPost(''); // Clear input field
   };
 
-  // 🚀 Handle Upvote (Only Once)
+  // 🚀 Handle Upvote (Toggle Upvote)
   const handleUpvote = async (postId) => {
-    if (votedPosts.has(postId)) return; // Prevent multiple votes
-
     const post = posts.find(post => post.id === postId);
     if (!post) return;
 
-    const newUpvotes = post.upvotes + 1;
+    const isUpvoted = votedPosts.has(postId);
+    const newUpvotes = isUpvoted ? post.upvotes - 1 : post.upvotes + 1;
 
     // ✅ Update in Supabase
     const { error } = await supabase
@@ -82,7 +81,7 @@ function App() {
       return;
     }
 
-    console.log(`✅ Upvoted post ${postId}`);
+    console.log(`✅ ${isUpvoted ? 'Removed Upvote' : 'Upvoted'} post ${postId}`);
 
     // ✅ Update UI instantly
     setPosts((prevPosts) =>
@@ -91,8 +90,13 @@ function App() {
       )
     );
 
-    // ✅ Mark post as voted to prevent multiple votes
-    setVotedPosts((prevVoted) => new Set(prevVoted).add(postId));
+    // ✅ Toggle upvote state
+    setVotedPosts((prevVoted) => {
+      const updatedVotes = new Set(prevVoted);
+      if (isUpvoted) updatedVotes.delete(postId);
+      else updatedVotes.add(postId);
+      return updatedVotes;
+    });
   };
 
   return (
@@ -135,7 +139,11 @@ function App() {
                   >
                     <span 
                       className="vote-count upvote-count" 
-                      style={{ fontSize: '18px', fontWeight: 'bold' }}
+                      style={{ 
+                        fontSize: '18px', 
+                        fontWeight: 'bold', 
+                        color: votedPosts.has(post.id) ? '#0f0' : '#888' 
+                      }}
                     >
                       {post.upvotes}
                     </span>
@@ -145,12 +153,10 @@ function App() {
                       className="vote-button upvote-button"
                       title="Upvote"
                       style={{ 
-                        cursor: votedPosts.has(post.id) ? 'not-allowed' : 'pointer', 
+                        cursor: 'pointer', 
                         fontSize: '16px', 
-                        padding: '5px', 
-                        opacity: votedPosts.has(post.id) ? 0.5 : 1 
+                        padding: '5px'
                       }}
-                      disabled={votedPosts.has(post.id)} // Disable button if already voted
                     >
                       ➕
                     </button>
