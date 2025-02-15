@@ -1,9 +1,8 @@
 import React, { useState } from 'react';
-import { supabase } from '../supabaseClient';
-import '../styles/ReportPage.css';
+import { supabase } from '../src/supabaseClient.js';
+import '../src/ReportGenerate.css';
 
 const OpenAI = require('openai');
-require('dotenv').config(); // Load environment variables from .env file
 
 function ReportPage() {
   const [report, setReport] = useState('');
