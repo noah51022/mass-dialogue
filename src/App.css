@@ -1,38 +1,226 @@
 .App {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.forum-header {
   text-align: center;
+  padding: 20px 0;
+  margin-bottom: 30px;
+  border-bottom: 1px solid #eee;
 }
 
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
+.forum-header h1 {
+  color: #333;
+  margin: 0;
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
+.forum-content {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
 }
 
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
+.post-form {
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.post-form form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.post-form textarea {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  resize: vertical;
+  font-family: inherit;
+}
+
+button {
+  background-color: #0066cc;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: background-color 0.2s;
+}
+
+button:hover {
+  background-color: #0052a3;
+}
+
+.posts-list {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.post-card {
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.post-header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 10px;
+  color: #666;
+  font-size: 0.9em;
+}
+
+.post-content {
+  margin: 15px 0;
+  line-height: 1.5;
+}
+
+.post-actions {
+  display: flex;
+  gap: 15px;
+  align-items: center;
+  margin-top: 15px;
+  padding-top: 15px;
+  border-top: 1px solid #eee;
+}
+
+.vote-buttons {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: white;
+  gap: 2px;
+  min-width: 40px;
+  padding: 4px;
+  background-color: #f8f8f8;
+  border-radius: 6px;
 }
 
-.App-link {
-  color: #61dafb;
+.vote-button {
+  background: none;
+  border: none;
+  padding: 2px 8px;
+  font-size: 18px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border-radius: 4px;
 }
 
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
+.vote-button:hover {
+  background-color: #f0f0f0;
+}
+
+.upvote-button {
+  color: #4CAF50;
+}
+
+.upvote-button:hover {
+  background-color: rgba(76, 175, 80, 0.1);
+}
+
+.downvote-button {
+  color: #f44336;
+}
+
+.downvote-button:hover {
+  background-color: rgba(244, 67, 54, 0.1);
+}
+
+.vote-count {
+  font-weight: bold;
+  font-size: 12px;
+  padding: 2px 0;
+}
+
+.upvote-count {
+  color: #4CAF50;
+}
+
+.downvote-count {
+  color: #f44336;
+}
+
+.vote-divider {
+  width: 20px;
+  height: 1px;
+  background-color: #ddd;
+  margin: 4px 0;
+}
+
+.comments-section {
+  flex: 1;
+}
+
+.toggle-comments {
+  background: none;
+  color: #666;
+  padding: 5px 10px;
+}
+
+.toggle-comments:hover {
+  background-color: #f0f0f0;
+}
+
+.comments-list {
+  margin-top: 15px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.comment {
+  background-color: #f8f8f8;
+  padding: 10px;
+  border-radius: 4px;
+  margin-left: 20px;
+}
+
+.comment-header {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.8em;
+  color: #666;
+  margin-bottom: 5px;
+}
+
+.comment-form {
+  margin-top: 15px;
+  display: flex;
+  gap: 10px;
+}
+
+.comment-form input {
+  flex: 1;
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-family: inherit;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .App {
+    padding: 10px;
   }
-  to {
-    transform: rotate(360deg);
+
+  .post-form textarea {
+    height: 100px;
+  }
+
+  .comment-form {
+    flex-direction: column;
+  }
+
+  .comment-form button {
+    width: 100%;
   }
 }
