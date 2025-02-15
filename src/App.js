@@ -5,25 +5,29 @@ import './App.css';
 function App() {
   const [posts, setPosts] = useState([]);
   const [newPost, setNewPost] = useState('');
+  const [votedPosts, setVotedPosts] = useState(new Set()); // Tracks if a user has voted
 
   // 🚀 Fetch Posts from Supabase on Load
   useEffect(() => {
     const fetchPosts = async () => {
       const { data, error } = await supabase
-        .from('messages') // Table name in Supabase
+        .from('messages')
         .select('*')
         .order('created_at', { ascending: false });
 
-      if (error) console.error('Error fetching posts:', error);
+      if (error) console.error('❌ Error fetching posts:', error);
       else setPosts(data);
     };
 
     fetchPosts();
 
-    // Subscribe to real-time updates
+    // ✅ Subscribe to real-time updates for new messages
     const subscription = supabase
       .channel('realtime-messages')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'messages' }, fetchPosts)
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, (payload) => {
+        console.log('📩 New message received:', payload.new);
+        setPosts((prevPosts) => [payload.new, ...prevPosts]);
+      })
       .subscribe();
 
     return () => {
@@ -31,32 +35,64 @@ function App() {
     };
   }, []);
 
-  // 🚀 Submit a New Post
+  // 🚀 Submit a New Message
   const handleSubmitPost = async (e) => {
     e.preventDefault();
     if (!newPost.trim()) return;
 
+    // ✅ Insert new message into Supabase
     const { data, error } = await supabase
       .from('messages')
-      .insert([{ text: newPost, upvotes: 0 }]);
+      .insert([{ text: newPost, upvotes: 0 }])
+      .select();
 
-    if (error) console.error('Error adding post:', error);
-    else setNewPost('');
+    if (error) {
+      console.error('❌ Error adding post:', error);
+      alert('Error posting message. Check Supabase setup.');
+      return;
+    }
+
+    console.log('✅ New Post Added:', data);
+
+    // ✅ Update UI instantly
+    if (data && data.length > 0) {
+      setPosts((prevPosts) => [data[0], ...prevPosts]);
+    }
+
+    setNewPost(''); // Clear input field
   };
 
-  // 🚀 Handle Upvotes
-  const handleVote = async (postId, voteType) => {
+  // 🚀 Handle Upvote (Only Once)
+  const handleUpvote = async (postId) => {
+    if (votedPosts.has(postId)) return; // Prevent multiple votes
+
     const post = posts.find(post => post.id === postId);
     if (!post) return;
 
-    const updatedUpvotes = voteType === 'up' ? post.upvotes + 1 : post.upvotes;
+    const newUpvotes = post.upvotes + 1;
 
+    // ✅ Update in Supabase
     const { error } = await supabase
       .from('messages')
-      .update({ upvotes: updatedUpvotes })
+      .update({ upvotes: newUpvotes })
       .eq('id', postId);
 
-    if (error) console.error('Error updating votes:', error);
+    if (error) {
+      console.error('❌ Error updating votes:', error);
+      return;
+    }
+
+    console.log(`✅ Upvoted post ${postId}`);
+
+    // ✅ Update UI instantly
+    setPosts((prevPosts) =>
+      prevPosts.map((p) =>
+        p.id === postId ? { ...p, upvotes: newUpvotes } : p
+      )
+    );
+
+    // ✅ Mark post as voted to prevent multiple votes
+    setVotedPosts((prevVoted) => new Set(prevVoted).add(postId));
   };
 
   return (
@@ -79,102 +115,54 @@ function App() {
         </div>
 
         <div className="posts-list">
-          {posts.map(post => (
-            <div key={post.id} className="post-card">
-              <div className="post-header">
-                <span className="post-author">Anonymous User</span>
-                <span className="post-timestamp">{new Date(post.created_at).toLocaleString()}</span>
-              </div>
-              <div className="post-content">{post.text}</div>
-              <div className="post-actions">
-                <div className="vote-buttons">
-                  <button
-                    onClick={() => handleVote(post.id, 'up')}
-                    className="vote-button upvote-button"
-                    title="Upvote"
+          {posts.length > 0 ? (
+            posts.map((post) => (
+              <div key={post.id} className="post-card">
+                <div className="post-header">
+                  <span className="post-author">Anonymous User</span>
+                  <span className="post-timestamp">{new Date(post.created_at).toLocaleString()}</span>
+                </div>
+                <div className="post-content">{post.text}</div>
+                <div className="post-actions">
+                  <div 
+                    className="vote-buttons" 
+                    style={{ 
+                      display: 'flex', 
+                      alignItems: 'center', 
+                      gap: '10px', 
+                      flexDirection: 'row' 
+                    }}
                   >
-                    ↑
-                  </button>
-                  <span className="vote-count upvote-count">{post.upvotes}</span>
+                    <span 
+                      className="vote-count upvote-count" 
+                      style={{ fontSize: '18px', fontWeight: 'bold' }}
+                    >
+                      {post.upvotes}
+                    </span>
+                    <span>Upvotes</span>
+                    <button
+                      onClick={() => handleUpvote(post.id)}
+                      className="vote-button upvote-button"
+                      title="Upvote"
+                      style={{ 
+                        cursor: votedPosts.has(post.id) ? 'not-allowed' : 'pointer', 
+                        fontSize: '16px', 
+                        padding: '5px', 
+                        opacity: votedPosts.has(post.id) ? 0.5 : 1 
+                      }}
+                      disabled={votedPosts.has(post.id)} // Disable button if already voted
+                    >
+                      ➕
+                    </button>
+                  </div>
                 </div>
               </div>
-              <CommentSection postId={post.id} />
-            </div>
-          ))}
+            ))
+          ) : (
+            <p>No messages yet. Be the first to post!</p>
+          )}
         </div>
       </main>
-    </div>
-  );
-}
-
-function CommentSection({ postId }) {
-  const [comments, setComments] = useState([]);
-  const [newComment, setNewComment] = useState('');
-  const [isExpanded, setIsExpanded] = useState(false);
-
-  // 🚀 Fetch Comments for Post
-  useEffect(() => {
-    const fetchComments = async () => {
-      const { data, error } = await supabase
-        .from('comments')
-        .select('*')
-        .eq('post_id', postId)
-        .order('created_at', { ascending: true });
-
-      if (error) console.error('Error fetching comments:', error);
-      else setComments(data);
-    };
-
-    fetchComments();
-  }, [postId]);
-
-  // 🚀 Add New Comment
-  const handleSubmitComment = async (e) => {
-    e.preventDefault();
-    if (!newComment.trim()) return;
-
-    const { data, error } = await supabase
-      .from('comments')
-      .insert([{ post_id: postId, text: newComment }]);
-
-    if (error) console.error('Error adding comment:', error);
-    else setNewComment('');
-  };
-
-  return (
-    <div className="comments-section">
-      <button
-        onClick={() => setIsExpanded(!isExpanded)}
-        className="toggle-comments"
-      >
-        {comments.length} Comments
-      </button>
-
-      {isExpanded && (
-        <>
-          <div className="comments-list">
-            {comments.map(comment => (
-              <div key={comment.id} className="comment">
-                <div className="comment-header">
-                  <span className="comment-author">Anonymous User</span>
-                  <span className="comment-timestamp">{new Date(comment.created_at).toLocaleString()}</span>
-                </div>
-                <div className="comment-content">{comment.text}</div>
-              </div>
-            ))}
-          </div>
-
-          <form onSubmit={handleSubmitComment} className="comment-form">
-            <input
-              type="text"
-              value={newComment}
-              onChange={(e) => setNewComment(e.target.value)}
-              placeholder="Add a comment..."
-            />
-            <button type="submit">Comment</button>
-          </form>
-        </>
-      )}
     </div>
   );
 }
