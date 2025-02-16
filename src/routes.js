@@ -1,205 +1,151 @@
-// src/agentWorkflow.js
+// src/routes.js
 import { Agent, Task, Team } from 'kaibanjs';
-import OpenAI from 'openai';
 
-// Initialize OpenAI client with a more specific name
-const aiClient = new OpenAI({
-  apiKey: process.env.REACT_APP_OPENAI_API_KEY,
-  dangerouslyAllowBrowser: true // Explicitly allow browser usage
-});
-
-// Create the Infrastructure Analysis agent
-export const researchAgent = new Agent({
+// Infrastructure Analysis
+const infrastructureAgent = new Agent({
   name: 'Infrastructure Analyst',
   role: 'Infrastructure Analyst',
-  goal: 'Analyze and provide insights on Boston\'s infrastructure',
-  background: 'Expert in urban planning and infrastructure analysis',
+  goal: 'Analyze Boston infrastructure',
+  background: 'Expert in urban infrastructure analysis with deep knowledge of civil engineering and public transportation systems',
+  systemPrompt: `You are an expert infrastructure analyst tasked with providing a detailed analysis of Boston's infrastructure.
+    Your analysis should be data-driven, specific, and actionable.
+    Focus on current conditions, maintenance needs, and concrete improvement recommendations.
+    Use real examples and cite specific locations or systems when possible.
+    Avoid generic statements and provide measurable metrics where applicable.`,
   llmConfig: {
-    provider: "openai",
-    model: "gpt-3.5-turbo",
+    provider: 'openai',
     apiKey: process.env.REACT_APP_OPENAI_API_KEY,
+    model: 'gpt-3.5-turbo',
+    temperature: 0.7,
+    maxTokens: 1500
   }
 });
 
-// Create the AI Infrastructure Research agent
-export const aiResearchAgent = new Agent({
-  name: 'AI Technology Analyst',
-  role: 'AI Technology Analyst',
-  goal: 'Research AI applications in infrastructure',
-  background: 'Expert in AI and smart city technologies',
-  llmConfig: {
-    provider: "openai",
-    model: "gpt-3.5-turbo",
-    apiKey: process.env.REACT_APP_OPENAI_API_KEY,
-  }
-});
-
-// Define the infrastructure analysis task
-export const researchTask = new Task({
+const infrastructureTask = new Task({
   id: 'boston-infrastructure-analysis',
   title: "Boston Infrastructure Analysis",
   description: `Analyze Boston's infrastructure focusing on:
-    1. Current state of roads and bridges
-    2. Public transportation systems (MBTA)
-    3. Water and sewage systems
-    4. Key maintenance issues
-    5. Recommended improvements`,
-  agent: researchAgent,
-  async execute() {
-    const analysisSteps = [
-      {
-        role: 'system',
-        content: `${this.agent.background}
-          You are conducting a thorough analysis of Boston's infrastructure.
-          Base your analysis on current data and real infrastructure conditions.
-          Provide specific examples and data points where possible.`
-      },
-      {
-        role: 'user',
-        content: this.description
-      }
-    ];
-
-    try {
-      // Initial research phase
-      const initialAnalysis = await aiClient.chat.completions.create({
-        model: "gpt-3.5-turbo",
-        messages: analysisSteps,
-        temperature: 0.7
-      });
-
-      // Validation and enhancement phase
-      const enhancedAnalysis = await aiClient.chat.completions.create({
-        model: "gpt-3.5-turbo",
-        messages: [
-          ...analysisSteps,
-          {
-            role: 'assistant',
-            content: initialAnalysis.choices[0].message.content
-          },
-          {
-            role: 'system',
-            content: `Review the analysis above. Enhance it with:
-              1. Specific data points and statistics
-              2. Recent infrastructure developments
-              3. Critical areas needing immediate attention
-              4. Cost estimates where applicable`
-          }
-        ],
-        temperature: 0.5
-      });
-
-      return enhancedAnalysis.choices[0].message.content;
-    } catch (error) {
-      console.error('Infrastructure analysis error:', error);
-      throw error;
-    }
+    1. Current state of roads and bridges (include specific examples and conditions)
+    2. Public transportation systems (MBTA) - include recent performance metrics
+    3. Water and sewage systems - focus on age, capacity, and maintenance needs
+    4. Key maintenance issues with specific locations and estimated costs
+    5. Recommended improvements with priority levels and timeline
+    
+    Format your response with clear sections and bullet points where appropriate.
+    Include specific examples, locations, and data points to support your analysis.`,
+  agent: infrastructureAgent,
+  metadata: {
+    requiresValidation: true,
+    outputFormat: 'detailed-report'
   }
 });
 
-// Define the AI research task
-export const aiResearchTask = new Task({
+// AI Research
+const aiAgent = new Agent({
+  name: 'AI Technology Analyst',
+  role: 'AI Technology Analyst',
+  goal: 'Analyze current AI infrastructure implementations',
+  background: 'Expert in AI applications for urban infrastructure with experience in smart city implementations',
+  systemPrompt: `As an AI infrastructure analyst, provide a detailed analysis of existing AI implementations in public infrastructure.
+    Do not conduct research - instead analyze and report on these specific implementations:
+    
+    1. Pittsburgh's Surtrac AI traffic system: Report actual performance metrics and results
+    2. London Underground's AI predictive maintenance system: Include specific outcomes
+    3. Singapore's Smart Nation sensors and systems: Detail real impact metrics
+    4. Barcelona's smart city initiatives: Include actual efficiency gains
+    5. Dubai's AI-powered infrastructure monitoring: Report concrete benefits
+    
+    For each system, you must include:
+    - Specific technologies in use
+    - Actual performance metrics
+    - Real cost savings
+    - Concrete implementation challenges
+    - Verified results
+    
+    Base your analysis only on existing deployments and verified data.`,
+  llmConfig: {
+    provider: 'openai',
+    apiKey: process.env.REACT_APP_OPENAI_API_KEY,
+    model: 'gpt-3.5-turbo',
+    temperature: 0.7,
+    maxTokens: 1500
+  }
+});
+
+const aiTask = new Task({
   id: 'ai-infrastructure-research',
   title: "AI in Infrastructure Research",
-  description: `Research AI applications in public infrastructure:
-    1. Current AI implementations in infrastructure management
-    2. Smart city technologies and their integration
-    3. Key benefits and measurable impacts
-    4. Implementation challenges and solutions
-    5. Future possibilities and recommendations`,
-  agent: aiResearchAgent,
-  async execute() {
-    const researchSteps = [
-      {
-        role: 'system',
-        content: `${this.agent.background}
-          You are researching current and potential AI applications in infrastructure.
-          Focus on real-world implementations and concrete examples.
-          Include specific case studies and measurable outcomes.`
-      },
-      {
-        role: 'user',
-        content: this.description
-      }
-    ];
+  description: `Analyze current AI applications in public infrastructure focusing on:
+    1. Traffic Management Systems
+       - Identify cities using AI traffic control (e.g., Pittsburgh's Surtrac)
+       - List specific AI technologies deployed
+       - Include traffic flow improvement metrics
+       - Document cost savings and efficiency gains
 
-    try {
-      // Initial research phase
-      const initialResearch = await aiClient.chat.completions.create({
-        model: "gpt-3.5-turbo",
-        messages: researchSteps,
-        temperature: 0.7
-      });
+    2. Public Transportation Optimization
+       - Detail AI systems used in metro systems (e.g., London's Tube)
+       - Describe predictive maintenance implementations
+       - Show on-time performance improvements
+       - Include passenger satisfaction metrics
 
-      // Validation and enhancement phase
-      const enhancedResearch = await aiClient.chat.completions.create({
-        model: "gpt-3.5-turbo",
-        messages: [
-          ...researchSteps,
-          {
-            role: 'assistant',
-            content: initialResearch.choices[0].message.content
-          },
-          {
-            role: 'system',
-            content: `Review the research above. Enhance it with:
-              1. Specific AI implementation examples
-              2. Real success metrics and ROI data
-              3. Technical implementation details
-              4. Integration challenges and solutions
-              5. Future technology roadmap`
-          }
-        ],
-        temperature: 0.5
-      });
+    3. Infrastructure Monitoring
+       - List cities using AI for bridge/road monitoring
+       - Describe sensor systems and AI analysis methods
+       - Include maintenance cost reductions
+       - Show early warning success rates
 
-      return enhancedResearch.choices[0].message.content;
-    } catch (error) {
-      console.error('AI research error:', error);
-      throw error;
-    }
+    4. Utility Management
+       - Detail smart grid AI implementations
+       - Show energy efficiency improvements
+       - Include waste reduction metrics
+       - Document cost savings
+
+    5. Emergency Response Systems
+       - Describe AI emergency response systems
+       - Show response time improvements
+       - Include incident prediction accuracy
+       - List cities with successful implementations`,
+  agent: aiAgent,
+  metadata: {
+    requiresValidation: true,
+    outputFormat: 'detailed-report'
   }
 });
 
-// Create teams with their respective tasks
-export const infrastructureTeam = new Team({
-  name: 'Infrastructure Analysis Team',
-  agents: [researchAgent],
-  tasks: [researchTask],
-  async onStart() {
-    try {
-      const output = await this.tasks[0].execute();
-      return {
-        result: output,
-        tasks: [{
-          id: this.tasks[0].id,
-          output: output
-        }]
-      };
-    } catch (error) {
-      console.error('Error in infrastructure team:', error);
-      throw error;
-    }
+// Teams with enhanced configuration
+const infrastructureTeam = new Team({
+  name: 'Infrastructure Team',
+  agents: [infrastructureAgent],
+  tasks: [infrastructureTask],
+  env: {
+    OPENAI_API_KEY: process.env.REACT_APP_OPENAI_API_KEY
+  },
+  config: {
+    validateOutputs: true,
+    maxRetries: 2,
+    useStructuredOutput: true
   }
 });
 
-export const aiResearchTeam = new Team({
+const aiTeam = new Team({
   name: 'AI Research Team',
-  agents: [aiResearchAgent],
-  tasks: [aiResearchTask],
-  async onStart() {
-    try {
-      const output = await this.tasks[0].execute();
-      return {
-        result: output,
-        tasks: [{
-          id: this.tasks[0].id,
-          output: output
-        }]
-      };
-    } catch (error) {
-      console.error('Error in AI research team:', error);
-      throw error;
-    }
+  agents: [aiAgent],
+  tasks: [aiTask],
+  env: {
+    OPENAI_API_KEY: process.env.REACT_APP_OPENAI_API_KEY
+  },
+  config: {
+    validateOutputs: true,
+    maxRetries: 2,
+    useStructuredOutput: true
   }
 });
+
+export {
+  infrastructureAgent,
+  infrastructureTask,
+  infrastructureTeam,
+  aiAgent,
+  aiTask,
+  aiTeam
+};
