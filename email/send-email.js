@@ -1,7 +1,8 @@
-require('dotenv').config(); 
+import 'dotenv/config'; // Use import for dotenv
+import nodemailer from 'nodemailer';
+import { google } from 'googleapis';
 
-const nodemailer = require('nodemailer');
-const { google } = require('googleapis');
+import { generateReport } from '../src/reportGenerator.js'; // Updated path
 
 const clientId = process.env.CLIENT_ID;
 const clientSecret = process.env.CLIENT_SECRET;
@@ -12,40 +13,55 @@ const refreshToken = process.env.REFRESH_TOKEN;
 const oAuth2Client = new google.auth.OAuth2(clientId, clientSecret, redirectURI);
 oAuth2Client.setCredentials({ refresh_token: refreshToken });
 
-async function sendMail() {
+async function sendMail(recipientList) {
   try {
-    // Generate a new access token using the refresh token
     const accessToken = await oAuth2Client.getAccessToken();
+    
+    // Generate the report
+    const reportText = await generateReport(process.env.OPENAI_API_KEY);
 
-    // Configure Nodemailer with OAuth2 authentication
     const transport = nodemailer.createTransport({
       service: 'gmail',
       auth: {
         type: 'OAuth2',
         user: 'ethangreenhouse57@gmail.com', // Your email address
-        clientId,
-        clientSecret,
-        refreshToken,
+        clientId: clientId,
+        clientSecret: clientSecret,
+        refreshToken: refreshToken,
         accessToken: accessToken.token,
       },
     });
 
-    // Email options
+    // Email options - common for all recipients
     const mailOptions = {
       from: 'Mass Dialogue <ethangreenhouse57@gmail.com>',
-      to: 'ethangreenhouse57@gmail.com',
       subject: 'Test Email',
-      text: 'This is a test email from Mass Dialogue',
-      html: '<h1>This is a test email from Mass Dialogue</h1>',
+      text: reportText, // Use the generated report text
+      //html: '<h1>This is a test email from Mass Dialogue</h1>',
     };
 
-    // Send email
-    const result = await transport.sendMail(mailOptions);
-    console.log('Email sent successfully:', result);
+    // Iterate over the recipient list and send emails
+    for (const recipient of recipientList) {
+      mailOptions.to = recipient; // Set recipient address
+      try {
+        const result = await transport.sendMail(mailOptions);
+        console.log(`Email sent successfully to ${recipient}:`, result);
+      } catch (error) {
+        console.error(`Error sending email to ${recipient}:`, error.message);
+      }
+    }
+
+    console.log('All emails sent!');
+
   } catch (error) {
-    console.error('Error sending email:', error.message);
+    console.error('Error:', error.message);
   }
 }
 
-// Execute the function
-sendMail();
+// Example usage:
+const recipients = [
+  'ethangreenhouse57@gmail.com',
+  'ethangreenhouse57+1@gmail.com',
+];
+
+sendMail(recipients);
