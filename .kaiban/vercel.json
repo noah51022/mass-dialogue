@@ -1,0 +1,20 @@
+{
+    "version": 2,
+    "name": "kaiban-board",
+    "outputDirectory": "./dist",
+    "builds": [
+        {
+            "src": "dist/**",
+            "use": "@vercel/static"  
+        }
+    ],
+    "routes": [
+        {
+          "handle": "filesystem"
+        },
+        {
+          "src": "/(.*)",
+          "dest": "/dist/$1"
+        }
+    ]
+}

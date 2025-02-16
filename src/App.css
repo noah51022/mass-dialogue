@@ -337,7 +337,8 @@ button:hover {
 }
 
 .sorting-dropdown {
-  margin-left: 20px; /* Adjust as needed */
+  margin-left: 20px;
+  /* Adjust as needed */
   font-size: 1rem;
 }
 
@@ -345,4 +346,34 @@ button:hover {
   padding: 5px;
   font-size: 1rem;
   margin-left: 10px;
+}
+
+.post-form-buttons {
+  display: flex;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.post-form-buttons button {
+  flex: 1;
+  padding: 10px 20px;
+  border-radius: 4px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.agent-analysis-button {
+  background-color: #6c5ce7;
+  color: white;
+  border: none;
+}
+
+.agent-analysis-button:hover:not(:disabled) {
+  background-color: #5f4dd0;
+}
+
+.agent-analysis-button:disabled {
+  background-color: #a8a5d3;
+  cursor: not-allowed;
 }
