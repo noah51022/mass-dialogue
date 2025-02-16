@@ -8,16 +8,22 @@ function App() {
   const [newPost, setNewPost] = useState('');
   const [activeTab, setActiveTab] = useState('forum'); // Add this for tab state
   const [userUpvotedPosts, setUserUpvotedPosts] = useState({}); // Stores upvoted posts per user session
+  const [sortBy, setSortBy] = useState('recency'); // New state to manage sorting
 
   // 🚀 Fetch Posts from Supabase
   const fetchPosts = async () => {
-    const { data, error } = await supabase
-      .from('messages')
-      .select('*')
-      .order('created_at', { ascending: false });
+    let { data, error } = await supabase.from('messages').select('*');
 
-    if (error) console.error('Error fetching posts:', error);
-    else setPosts(data);
+    if (error) {
+      console.error('Error fetching posts:', error);
+    } else {
+      if (sortBy === 'recency') {
+        data = data.sort((a, b) => new Date(b.created_at) - new Date(a.created_at)); // Sort by Recency
+      } else if (sortBy === 'upvotes') {
+        data = data.sort((a, b) => b.upvotes - a.upvotes); // Sort by Upvotes
+      }
+      setPosts(data);
+    }
   };
 
   useEffect(() => {
@@ -36,7 +42,7 @@ function App() {
     return () => {
       supabase.removeChannel(postsSubscription);
     };
-  }, []);
+  }, [sortBy]); // Re-fetch posts when sorting changes
 
   // 🚀 Submit a New Post
   const handleSubmitPost = async (e) => {
@@ -96,6 +102,19 @@ function App() {
             Generate Report
           </button>
         </div>
+
+        {/* Dropdown Menu for Sorting */}
+        <div className="sorting-dropdown">
+          <label htmlFor="sortBy">Sort by: </label>
+          <select
+            id="sortBy"
+            value={sortBy}
+            onChange={(e) => setSortBy(e.target.value)}
+          >
+            <option value="recency">Recency</option>
+            <option value="upvotes">Upvotes</option>
+          </select>
+        </div>
       </header>
 
       <main className="forum-content">
@@ -127,8 +146,9 @@ function App() {
                     <div className="vote-buttons">
                       <button
                         onClick={() => handleVote(post.id)}
-                        className={`vote-button upvote-button ${userUpvotedPosts[post.id] ? 'active' : ''
-                          }`}
+                        className={`vote-button upvote-button ${
+                          userUpvotedPosts[post.id] ? 'active' : ''
+                        }`}
                         title="Toggle Upvote"
                         style={{
                           color: userUpvotedPosts[post.id] ? '#2ecc71' : '#888', // Green when upvoted, Gray otherwise
