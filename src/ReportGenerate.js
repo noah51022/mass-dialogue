@@ -52,9 +52,11 @@ function ReportPage() {
             content: "You are a helpful assistant that summarizes forum discussions."
           }, {
             role: "user",
-            content: `Please provide a concise summary of these forum messages, highlighting the main topics, trends, and most engaged discussions based on upvotes: ${JSON.stringify(messagesText)}`
+            content: `Take in these messages and then give a list of important posts that have been submited.
+            Prioritize the posts that have the most upvotes, only give a max of 3 posts. and then after giving a list then provide a summary of the posts.
+            Don't give the posts in a JSON format. Use a regular text format. ${JSON.stringify(messagesText)}`
           }],
-          max_tokens: 500
+          max_tokens: 250
         })
       });
 
