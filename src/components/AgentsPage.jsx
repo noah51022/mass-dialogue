@@ -110,6 +110,7 @@ function AgentsPage() {
   return (
     <div className="agents-page">
       <h1>Infrastructure Analysis System</h1>
+      <p style={{ fontSize: '1.2rem', fontWeight: 'bold', textAlign: 'center' }}>(Powered by Agents 🤵‍♂️)</p>
       <div className="agents-grid">
         {/* Infrastructure Analysis Section */}
         <div className="agent-section">
