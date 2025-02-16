@@ -11,24 +11,40 @@ code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
 }
+
 .search-filter-container {
   display: flex;
   align-items: center; /* Vertically align them in the center */
   gap: 10px; /* Space between the search bar and dropdown */
-  padding: 10px;
+  padding-top: 20px;
+  
 }
 
 .search-bar {
-  width: 1000px; /* Wider search bar */
+  width: 2000px; /* Set width to 70% of the screen */
+  max-width: 1000px; /* Optional: to cap the width at 1000px */
   padding: 8px;
   font-size: 16px;
   border-radius: 8px; /* Rounded corners */
   border: 1px solid #ccc; /* Optional: Border color */
 }
 
+.sorting-dropdown {
+  display: flex;
+  align-items: center;  /* Centers the label and select vertically */
+  gap: 8px;             /* Adds space between the label and dropdown */
+  width: 1000px;        /* Match the width of the search bar */
+}
+
+.sorting-dropdown label {
+  font-size: 16px;
+  margin-right: 8px;     /* Adds space between the label and the dropdown */
+}
+
 .sorting-dropdown select {
+  width: 300px;            /* Make the select box take full available width */
   padding: 8px;
   font-size: 16px;
-  border-radius: 8px; /* Rounded corners */
+  border-radius: 8px;     /* Match the rounded corners */
   border: 1px solid #ccc; /* Optional: Border color */
 }
