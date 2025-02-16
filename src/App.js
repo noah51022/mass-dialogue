@@ -6,6 +6,7 @@ import './App.css';
 function App() {
   const [posts, setPosts] = useState([]);
   const [newPost, setNewPost] = useState('');
+
   const [activeTab, setActiveTab] = useState('forum');
   const [userUpvotedPosts, setUserUpvotedPosts] = useState({});
   const [filterKeyword, setFilterKeyword] = useState('');
@@ -36,6 +37,7 @@ function App() {
       }
 
       setPosts(filteredData);
+
     }
   };
 
@@ -115,6 +117,7 @@ function App() {
             Generate Report
           </button>
         </div>
+
 
         {/* Conditionally render the search-filter-container based on active tab */}
         {activeTab === 'forum' && (
