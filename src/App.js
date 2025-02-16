@@ -6,23 +6,38 @@ import './App.css';
 function App() {
   const [posts, setPosts] = useState([]);
   const [newPost, setNewPost] = useState('');
-  const [activeTab, setActiveTab] = useState('forum'); // Add this for tab state
-  const [userUpvotedPosts, setUserUpvotedPosts] = useState({}); // Stores upvoted posts per user session
-  const [sortBy, setSortBy] = useState('recency'); // New state to manage sorting
+
+  const [activeTab, setActiveTab] = useState('forum');
+  const [userUpvotedPosts, setUserUpvotedPosts] = useState({});
+  const [filterKeyword, setFilterKeyword] = useState('');
+  const [sortBy, setSortBy] = useState('created_at'); // Track sorting choice (default: by date)
 
   // 🚀 Fetch Posts from Supabase
   const fetchPosts = async () => {
-    let { data, error } = await supabase.from('messages').select('*');
+    const { data, error } = await supabase
+      .from('messages')
+      .select('*');
 
-    if (error) {
-      console.error('Error fetching posts:', error);
-    } else {
-      if (sortBy === 'recency') {
-        data = data.sort((a, b) => new Date(b.created_at) - new Date(a.created_at)); // Sort by Recency
-      } else if (sortBy === 'upvotes') {
-        data = data.sort((a, b) => b.upvotes - a.upvotes); // Sort by Upvotes
+    if (error) console.error('Error fetching posts:', error);
+    else {
+      let filteredData = data;
+
+      // Apply filter if filterKeyword exists
+      if (filterKeyword) {
+        filteredData = data.filter((post) =>
+          post.text.toLowerCase().includes(filterKeyword.toLowerCase())
+        );
       }
-      setPosts(data);
+
+      // Sort the data based on sortBy
+      if (sortBy === 'created_at') {
+        filteredData = filteredData.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+      } else if (sortBy === 'upvotes') {
+        filteredData = filteredData.sort((a, b) => b.upvotes - a.upvotes);
+      }
+
+      setPosts(filteredData);
+
     }
   };
 
@@ -42,7 +57,7 @@ function App() {
     return () => {
       supabase.removeChannel(postsSubscription);
     };
-  }, [sortBy]); // Re-fetch posts when sorting changes
+  }, [filterKeyword, sortBy]); // Re-fetch posts when filterKeyword or sortBy changes
 
   // 🚀 Submit a New Post
   const handleSubmitPost = async (e) => {
@@ -103,18 +118,30 @@ function App() {
           </button>
         </div>
 
-        {/* Dropdown Menu for Sorting */}
-        <div className="sorting-dropdown">
-          <label htmlFor="sortBy">Sort by: </label>
-          <select
-            id="sortBy"
-            value={sortBy}
-            onChange={(e) => setSortBy(e.target.value)}
-          >
-            <option value="recency">Recency</option>
-            <option value="upvotes">Upvotes</option>
-          </select>
-        </div>
+
+        {/* Conditionally render the search-filter-container based on active tab */}
+        {activeTab === 'forum' && (
+          <div className="search-filter-container">
+            <input
+              type="text"
+              value={filterKeyword}
+              onChange={(e) => setFilterKeyword(e.target.value)}
+              placeholder="Search posts by keyword..."
+              className="search-bar"
+            />
+            <div className="sorting-dropdown">
+              <label htmlFor="sortBy">Sort by: </label>
+              <select
+                id="sortBy"
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value)}
+              >
+                <option value="created_at">Date</option>
+                <option value="upvotes">Upvotes</option>
+              </select>
+            </div>
+          </div>
+        )}
       </header>
 
       <main className="forum-content">
