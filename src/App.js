@@ -9,22 +9,33 @@ function App() {
   const [activeTab, setActiveTab] = useState('forum');
   const [userUpvotedPosts, setUserUpvotedPosts] = useState({});
   const [filterKeyword, setFilterKeyword] = useState('');
-  const [sortBy, setSortBy] = useState('created_at'); // Track sorting choice
+  const [sortBy, setSortBy] = useState('created_at'); // Track sorting choice (default: by date)
 
   // 🚀 Fetch Posts from Supabase
   const fetchPosts = async () => {
     const { data, error } = await supabase
       .from('messages')
-      .select('*')
-      .order(sortBy, { ascending: sortBy === 'created_at' ? false : true }); // Sort by created_at (descending) or upvotes (ascending)
+      .select('*');
 
     if (error) console.error('Error fetching posts:', error);
     else {
-      // Filter posts based on the filterKeyword
-      const filteredPosts = data.filter((post) =>
-        post.text.toLowerCase().includes(filterKeyword.toLowerCase()) // Case-insensitive search
-      );
-      setPosts(filteredPosts);
+      let filteredData = data;
+
+      // Apply filter if filterKeyword exists
+      if (filterKeyword) {
+        filteredData = data.filter((post) =>
+          post.text.toLowerCase().includes(filterKeyword.toLowerCase())
+        );
+      }
+
+      // Sort the data based on sortBy
+      if (sortBy === 'created_at') {
+        filteredData = filteredData.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+      } else if (sortBy === 'upvotes') {
+        filteredData = filteredData.sort((a, b) => b.upvotes - a.upvotes);
+      }
+
+      setPosts(filteredData);
     }
   };
 
@@ -115,20 +126,17 @@ function App() {
           />
         </div>
 
-        {/* Sorting Options */}
-        <div className="sort-options">
-          <button
-            onClick={() => setSortBy('created_at')}
-            className={sortBy === 'created_at' ? 'active' : ''}
+        {/* Dropdown Menu for Sorting */}
+        <div className="sorting-dropdown">
+          <label htmlFor="sortBy">Sort by: </label>
+          <select
+            id="sortBy"
+            value={sortBy}
+            onChange={(e) => setSortBy(e.target.value)}
           >
-            Sort by Date
-          </button>
-          <button
-            onClick={() => setSortBy('upvotes')}
-            className={sortBy === 'upvotes' ? 'active' : ''}
-          >
-            Sort by Upvotes
-          </button>
+            <option value="created_at">Date</option>
+            <option value="upvotes">Upvotes</option>
+          </select>
         </div>
       </header>
 
@@ -161,8 +169,9 @@ function App() {
                     <div className="vote-buttons">
                       <button
                         onClick={() => handleVote(post.id)}
-                        className={`vote-button upvote-button ${userUpvotedPosts[post.id] ? 'active' : ''
-                          }`}
+                        className={`vote-button upvote-button ${
+                          userUpvotedPosts[post.id] ? 'active' : ''
+                        }`}
                         title="Toggle Upvote"
                         style={{
                           color: userUpvotedPosts[post.id] ? '#2ecc71' : '#888', // Green when upvoted, Gray otherwise
