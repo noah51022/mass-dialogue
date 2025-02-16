@@ -1,6 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from './supabaseClient.js';
 import ReportPage from './ReportGenerate.js'; // Update import path
+import AgentsPage from './components/AgentsPage.jsx';
+import {
+  infrastructureTeam,
+  aiResearchTeam,
+  researchTask,
+  aiResearchTask,
+  researchAgent,
+  aiResearchAgent
+} from './routes.js';
 import './App.css';
 
 function App() {
