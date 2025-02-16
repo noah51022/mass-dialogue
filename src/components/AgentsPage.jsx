@@ -1,6 +1,11 @@
 // src/App.jsx
 import React, { useState, useEffect } from 'react';
-import { infrastructureTeam, aiResearchTeam, researchTask, aiResearchTask } from '../routes.js';
+import {
+  infrastructureTeam,
+  aiTeam,
+  infrastructureTask,
+  aiTask
+} from '../routes.js';
 import '../styles/AgentsPage.css';
 
 function AgentsPage() {
@@ -16,9 +21,9 @@ function AgentsPage() {
   useEffect(() => {
     const handleTaskUpdate = (event) => {
       console.log('Task update:', event);
-      if (event.taskId === researchTask.id) {
+      if (event.taskId === infrastructureTask.id) {
         setInfrastructureState(event.status);
-      } else if (event.taskId === aiResearchTask.id) {
+      } else if (event.taskId === aiTask.id) {
         setAiState(event.status);
       }
     };
@@ -26,16 +31,16 @@ function AgentsPage() {
     if (infrastructureTeam.events) {
       infrastructureTeam.events.on('taskUpdate', handleTaskUpdate);
     }
-    if (aiResearchTeam.events) {
-      aiResearchTeam.events.on('taskUpdate', handleTaskUpdate);
+    if (aiTeam.events) {
+      aiTeam.events.on('taskUpdate', handleTaskUpdate);
     }
 
     return () => {
       if (infrastructureTeam.events && infrastructureTeam.events.off) {
         infrastructureTeam.events.off('taskUpdate', handleTaskUpdate);
       }
-      if (aiResearchTeam.events && aiResearchTeam.events.off) {
-        aiResearchTeam.events.off('taskUpdate', handleTaskUpdate);
+      if (aiTeam.events && aiTeam.events.off) {
+        aiTeam.events.off('taskUpdate', handleTaskUpdate);
       }
     };
   }, []);
@@ -80,7 +85,7 @@ function AgentsPage() {
         setAiState('DOING'); // Update state to DOING
       }
 
-      const workflowResult = await aiResearchTeam.start();
+      const workflowResult = await aiTeam.start();
 
       if (workflowResult && workflowResult.result) {
         setAiResult(workflowResult.result);
@@ -130,7 +135,7 @@ function AgentsPage() {
               className={`state-indicator ${infrastructureState.toLowerCase()}`}
               style={{ borderColor: getStateColor(infrastructureState) }}
             >
-              <div className="state-title">{researchTask.title}</div>
+              <div className="state-title">{infrastructureTask.title}</div>
               <div className="state-status">{infrastructureState}</div>
               {isLoadingInfrastructure && infrastructureState === 'DOING' && (
                 <div className="state-animation"></div>
@@ -181,7 +186,7 @@ function AgentsPage() {
               className={`state-indicator ${aiState.toLowerCase()}`}
               style={{ borderColor: getStateColor(aiState) }}
             >
-              <div className="state-title">{aiResearchTask.title}</div>
+              <div className="state-title">{aiTask.title}</div>
               <div className="state-status">{aiState}</div>
               {isLoadingAI && aiState === 'DOING' && (
                 <div className="state-animation"></div>
