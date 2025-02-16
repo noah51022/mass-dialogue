@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from './supabaseClient';
 import ReportPage from './ReportGenerate'; // Update import path
+import AgentsPage from './components/AgentsPage.jsx';
 import './App.css';
 
 function App() {
@@ -116,6 +117,12 @@ function App() {
           >
             Generate Report
           </button>
+          <button
+            className={`tab-button ${activeTab === 'agents' ? 'active' : ''}`}
+            onClick={() => setActiveTab('agents')}
+          >
+            Agents
+          </button>
         </div>
 
 
@@ -173,9 +180,8 @@ function App() {
                     <div className="vote-buttons">
                       <button
                         onClick={() => handleVote(post.id)}
-                        className={`vote-button upvote-button ${
-                          userUpvotedPosts[post.id] ? 'active' : ''
-                        }`}
+                        className={`vote-button upvote-button ${userUpvotedPosts[post.id] ? 'active' : ''
+                          }`}
                         title="Toggle Upvote"
                         style={{
                           color: userUpvotedPosts[post.id] ? '#2ecc71' : '#888', // Green when upvoted, Gray otherwise
@@ -199,9 +205,11 @@ function App() {
               ))}
             </div>
           </>
-        ) : (
+        ) : activeTab === 'report' ? (
           <ReportPage />
-        )}
+        ) : activeTab === 'agents' ? (
+          <AgentsPage />
+        ) : null}
       </main>
     </div>
   );
