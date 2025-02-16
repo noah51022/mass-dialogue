@@ -55,6 +55,5 @@
     "os-browserify": "^0.3.0",
     "path-browserify": "^1.0.1",
     "react-app-rewired": "^2.2.1"
-  },
-  "proxy": "http://localhost:3001"
+  }
 }

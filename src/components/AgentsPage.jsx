@@ -1,15 +1,16 @@
 // src/App.jsx
 import React, { useState, useEffect } from 'react';
-import { aiTeam, researchTask, aiResearchTask } from '../routes.js';
+import { infrastructureTeam, aiResearchTeam, researchTask, aiResearchTask } from '../routes.js';
 import '../styles/AgentsPage.css';
 
 function AgentsPage() {
   const [infrastructureResult, setInfrastructureResult] = useState(null);
   const [aiResult, setAiResult] = useState(null);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoadingInfrastructure, setIsLoadingInfrastructure] = useState(false);
+  const [isLoadingAI, setIsLoadingAI] = useState(false);
   const [error, setError] = useState(null);
-  const [infrastructureState, setInfrastructureState] = useState('TODO');
-  const [aiState, setAiState] = useState('TODO');
+  const [infrastructureState, setInfrastructureState] = useState('TO-DO');
+  const [aiState, setAiState] = useState('TO-DO');
 
   // Set up event listener using useEffect
   useEffect(() => {
@@ -22,50 +23,83 @@ function AgentsPage() {
       }
     };
 
-    // Add event listener
-    if (aiTeam.events) {
-      aiTeam.events.on('taskUpdate', handleTaskUpdate);
+    if (infrastructureTeam.events) {
+      infrastructureTeam.events.on('taskUpdate', handleTaskUpdate);
+    }
+    if (aiResearchTeam.events) {
+      aiResearchTeam.events.on('taskUpdate', handleTaskUpdate);
     }
 
-    // Cleanup function
     return () => {
-      if (aiTeam.events && aiTeam.events.off) {
-        aiTeam.events.off('taskUpdate', handleTaskUpdate);
+      if (infrastructureTeam.events && infrastructureTeam.events.off) {
+        infrastructureTeam.events.off('taskUpdate', handleTaskUpdate);
+      }
+      if (aiResearchTeam.events && aiResearchTeam.events.off) {
+        aiResearchTeam.events.off('taskUpdate', handleTaskUpdate);
       }
     };
   }, []);
 
-  const startWorkflow = async (taskId, setResult, setState) => {
-    setState('TODO');
-    setIsLoading(true);
+  // Separate functions for each agent's workflow
+  const startInfrastructureAnalysis = async () => {
+    setInfrastructureState('TO-DO');
+    setIsLoadingInfrastructure(true);
     setError(null);
 
     try {
-      const workflowResult = await aiTeam.start({
-        tasks: [{
-          id: taskId,
-          input: {}
-        }]
-      });
+      // Check if the state is "DOING"
+      if (infrastructureState !== 'DOING') {
+        setInfrastructureState('DOING'); // Update state to DOING
+      }
+
+      const workflowResult = await infrastructureTeam.start();
 
       if (workflowResult && workflowResult.result) {
-        setResult(workflowResult.result);
-        setState('DONE');
+        setInfrastructureResult(workflowResult.result);
+        setInfrastructureState('DONE');
       } else {
-        throw new Error("No analysis results received");
+        setInfrastructureState('FAILED'); // Update state to FAILED if no results
       }
     } catch (error) {
-      console.error('Workflow execution error:', error);
+      console.error('Infrastructure workflow error:', error);
       setError(error.message);
-      setState('FAILED');
+      setInfrastructureState('FAILED');
     } finally {
-      setIsLoading(false);
+      setIsLoadingInfrastructure(false);
+    }
+  };
+
+  const startAIResearch = async () => {
+    setAiState('TO-DO');
+    setIsLoadingAI(true);
+    setError(null);
+
+    try {
+      // Check if the state is "DOING"
+      if (aiState !== 'DOING') {
+        setAiState('DOING'); // Update state to DOING
+      }
+
+      const workflowResult = await aiResearchTeam.start();
+
+      if (workflowResult && workflowResult.result) {
+        setAiResult(workflowResult.result);
+        setAiState('DONE');
+      } else {
+        setAiState('FAILED'); // Update state to FAILED if no results
+      }
+    } catch (error) {
+      console.error('AI research workflow error:', error);
+      setError(error.message);
+      setAiState('FAILED');
+    } finally {
+      setIsLoadingAI(false);
     }
   };
 
   const getStateColor = (state) => {
     switch (state) {
-      case 'TODO': return '#ffc107';
+      case 'TO-DO': return '#ffc107';
       case 'DOING': return '#17a2b8';
       case 'DONE': return '#28a745';
       case 'FAILED': return '#dc3545';
@@ -79,26 +113,25 @@ function AgentsPage() {
       <div className="agents-grid">
         {/* Infrastructure Analysis Section */}
         <div className="agent-section">
-          <h2>Infrastructure Analysis</h2>
+          <h2>Boston Infrastructure Analysis</h2>
           <div className="agents-controls">
             <button
-              onClick={() => startWorkflow(researchTask.id, setInfrastructureResult, setInfrastructureState)}
-              disabled={isLoading}
+              onClick={startInfrastructureAnalysis}
+              disabled={isLoadingInfrastructure}
               className="agent-button"
             >
-              {isLoading ? 'Analyzing...' : 'Analyze Infrastructure'}
+              {isLoadingInfrastructure ? 'Analyzing...' : 'Analyze Infrastructure'}
             </button>
           </div>
 
           <div className="state-container">
-            <h3>Current State</h3>
             <div
               className={`state-indicator ${infrastructureState.toLowerCase()}`}
               style={{ borderColor: getStateColor(infrastructureState) }}
             >
               <div className="state-title">{researchTask.title}</div>
               <div className="state-status">{infrastructureState}</div>
-              {isLoading && infrastructureState === 'DOING' && (
+              {isLoadingInfrastructure && infrastructureState === 'DOING' && (
                 <div className="state-animation"></div>
               )}
             </div>
@@ -121,23 +154,22 @@ function AgentsPage() {
           <h2>AI in Infrastructure</h2>
           <div className="agents-controls">
             <button
-              onClick={() => startWorkflow(aiResearchTask.id, setAiResult, setAiState)}
-              disabled={isLoading}
+              onClick={startAIResearch}
+              disabled={isLoadingAI}
               className="agent-button"
             >
-              {isLoading ? 'Researching...' : 'Research AI Applications'}
+              {isLoadingAI ? 'Researching...' : 'Research AI Applications'}
             </button>
           </div>
 
           <div className="state-container">
-            <h3>Current State</h3>
             <div
               className={`state-indicator ${aiState.toLowerCase()}`}
               style={{ borderColor: getStateColor(aiState) }}
             >
               <div className="state-title">{aiResearchTask.title}</div>
               <div className="state-status">{aiState}</div>
-              {isLoading && aiState === 'DOING' && (
+              {isLoadingAI && aiState === 'DOING' && (
                 <div className="state-animation"></div>
               )}
             </div>

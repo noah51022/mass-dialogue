@@ -13,14 +13,12 @@ export const researchAgent = new Agent({
     apiKey: process.env.REACT_APP_OPENAI_API_KEY,
   },
   systemPrompt: `You are an expert infrastructure analyst focusing on Boston's public infrastructure. 
-    Analyze and provide detailed insights about:
+    Provide a concise report on:
     1. Current state of roads and bridges
     2. Public transportation systems (MBTA)
     3. Water and sewage systems
-    4. Critical maintenance requirements
-    5. Recommended improvements
-    
-    Format your response as a detailed report with clear sections and specific recommendations.`
+    4. Key maintenance issues
+    5. Recommended improvements`
 });
 
 // Create the AI Infrastructure Research agent
@@ -35,61 +33,29 @@ export const aiResearchAgent = new Agent({
     apiKey: process.env.REACT_APP_OPENAI_API_KEY,
   },
   systemPrompt: `You are an expert analyst specializing in AI applications in public infrastructure. 
-    Research and analyze:
-    1. Current AI implementations in infrastructure
+    Summarize:
+    1. Current AI implementations
     2. Smart city technologies
-    3. Automated maintenance systems
-    4. AI-driven traffic management
-    5. Predictive infrastructure maintenance
-    
-    Format your response as a detailed report with specific examples and future possibilities.`
+    3. Key benefits and challenges
+    4. Future possibilities`
 });
 
 // Define the infrastructure analysis task
 export const researchTask = new Task({
   id: 'boston-infrastructure-analysis',
   title: "Boston Infrastructure Analysis",
-  description: `Conduct a comprehensive analysis of Boston's infrastructure. Your task:
-
-  1. Assess the current state of:
-     - Roads and bridges (condition, age, maintenance history)
-     - Public transportation (MBTA system, buses, trains)
-     - Water and sewage infrastructure
-     - Other critical infrastructure
-
-  2. Identify:
-     - Major maintenance issues
-     - Safety concerns
-     - Capacity problems
-     - Aging infrastructure risks
-
-  3. Provide:
-     - Specific recommendations for improvements
-     - Priority areas needing immediate attention
-     - Long-term infrastructure development suggestions
-     - Cost-effective maintenance strategies`,
-  expectedOutput: 'A detailed infrastructure analysis report with current status, issues, and recommendations',
+  description: `Analyze Boston's infrastructure focusing on:
+  - Current state of roads, bridges, and public transport
+  - Key maintenance issues
+  - Recommendations for improvements`,
+  expectedOutput: 'A concise report on Boston\'s infrastructure status and recommendations',
   agent: researchAgent,
   execute: async (input, context) => {
-    const prompt = `Based on your knowledge and analysis, provide a comprehensive report on Boston's infrastructure:
+    const prompt = `Provide a brief report on Boston's infrastructure:
 
-    1. Current Infrastructure Status:
-    - Detailed assessment of roads, bridges, and tunnels
-    - MBTA system evaluation
-    - Water and sewage system analysis
-    
-    2. Critical Issues:
-    - Identify major maintenance problems
-    - List urgent safety concerns
-    - Highlight capacity limitations
-    
-    3. Recommendations:
-    - Specific improvement proposals
-    - Priority projects
-    - Timeline suggestions
-    - Budget considerations
-
-    Please provide specific details and examples where possible.`;
+    1. Current state of roads and bridges
+    2. Key maintenance issues
+    3. Recommendations for improvements`;
 
     const response = await context.llm.chat([
       { role: "system", content: context.agent.systemPrompt },
@@ -104,46 +70,18 @@ export const researchTask = new Task({
 export const aiResearchTask = new Task({
   id: 'ai-infrastructure-research',
   title: "AI in Infrastructure Research",
-  description: `Research and analyze AI applications in public infrastructure:
-
-  1. Current Implementation:
-     - Smart city initiatives
-     - AI-powered monitoring systems
-     - Automated maintenance programs
-     - Traffic management systems
-
-  2. Identify:
-     - Successful AI implementations
-     - Emerging technologies
-     - Integration challenges
-     - Future possibilities
-
-  3. Provide:
-     - Current use cases
-     - Implementation strategies
-     - Success metrics
-     - Future recommendations`,
-  expectedOutput: 'A detailed analysis of AI applications in public infrastructure',
+  description: `Research AI applications in public infrastructure:
+  - Current implementations
+  - Key benefits and challenges
+  - Future possibilities`,
+  expectedOutput: 'A brief analysis of AI applications in public infrastructure',
   agent: aiResearchAgent,
   execute: async (input, context) => {
-    const prompt = `Provide a comprehensive analysis of AI applications in public infrastructure:
+    const prompt = `Summarize AI applications in public infrastructure:
 
-    1. Current AI Applications:
-    - Smart city implementations
-    - AI-driven monitoring systems
-    - Automated maintenance solutions
-    
-    2. Impact Analysis:
-    - Success stories
-    - Implementation challenges
-    - Performance metrics
-    
-    3. Future Outlook:
-    - Emerging technologies
-    - Integration opportunities
-    - Development roadmap
-
-    Please provide specific examples and real-world applications.`;
+    1. Current implementations
+    2. Key benefits and challenges
+    3. Future possibilities`;
 
     const response = await context.llm.chat([
       { role: "system", content: context.agent.systemPrompt },
@@ -154,11 +92,21 @@ export const aiResearchTask = new Task({
   }
 });
 
-// Create team with both agents
-export const aiTeam = new Team({
-  name: 'Infrastructure Research Team',
-  agents: [researchAgent, aiResearchAgent],
-  tasks: [researchTask, aiResearchTask],
+// Create separate teams for each agent
+export const infrastructureTeam = new Team({
+  name: 'Boston Infrastructure Team',
+  agents: [researchAgent],
+  tasks: [researchTask],
+  options: {
+    emitEvents: true,
+    eventInterval: 1000
+  }
+});
+
+export const aiResearchTeam = new Team({
+  name: 'AI Research Team',
+  agents: [aiResearchAgent],
+  tasks: [aiResearchTask],
   options: {
     emitEvents: true,
     eventInterval: 1000
