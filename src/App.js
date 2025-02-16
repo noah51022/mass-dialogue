@@ -127,9 +127,8 @@ function App() {
                     <div className="vote-buttons">
                       <button
                         onClick={() => handleVote(post.id)}
-                        className={`vote-button upvote-button ${
-                          userUpvotedPosts[post.id] ? 'active' : ''
-                        }`}
+                        className={`vote-button upvote-button ${userUpvotedPosts[post.id] ? 'active' : ''
+                          }`}
                         title="Toggle Upvote"
                       >
                         ↑
@@ -140,7 +139,7 @@ function App() {
                     </div>
                   </div>
                   {/* ✅ Comment Section for Each Post */}
-                  <CommentSection postId={post.id} />
+                  <CommentSection postId={post.id} fetchPosts={fetchPosts} />
                 </div>
               ))}
             </div>
@@ -154,7 +153,7 @@ function App() {
 }
 
 // 🚀 COMMENT SYSTEM
-function CommentSection({ postId }) {
+function CommentSection({ postId, fetchPosts }) {
   const [comments, setComments] = useState([]);
   const [newComment, setNewComment] = useState('');
   const [isExpanded, setIsExpanded] = useState(false);
@@ -201,7 +200,8 @@ function CommentSection({ postId }) {
     if (error) console.error('Error adding comment:', error);
     else {
       setNewComment('');
-      fetchComments(); // ✅ Auto-refresh after comment submission
+      fetchComments(); // Refresh comments
+      fetchPosts(); // Refresh all posts
     }
   };
 
