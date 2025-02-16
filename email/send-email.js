@@ -1,25 +1,24 @@
-//import { generateReport } from '../src/ReportGenerate.js';
-//console.log(generateReport()); // Output: This is the generated report.
+import 'dotenv/config'; // Use import for dotenv
+import nodemailer from 'nodemailer';
+import { google } from 'googleapis';
 
-import { getReport } from '../src/ReportGenerate.js';
-
-require('dotenv').config();
-
-const nodemailer = require('nodemailer');
-const { google } = require('googleapis');
+import { generateReport } from '../src/reportGenerator.js'; // Updated path
 
 const clientId = process.env.CLIENT_ID;
 const clientSecret = process.env.CLIENT_SECRET;
 const redirectURI = process.env.REDIRECT_URI;
 const refreshToken = process.env.REFRESH_TOKEN;
 
+// Initialize oAuth2Client with correct parameters
 const oAuth2Client = new google.auth.OAuth2(clientId, clientSecret, redirectURI);
 oAuth2Client.setCredentials({ refresh_token: refreshToken });
 
 async function sendMail(recipientList) {
   try {
     const accessToken = await oAuth2Client.getAccessToken();
-    const report = getReport();
+    
+    // Generate the report
+    const reportText = await generateReport(process.env.OPENAI_API_KEY);
 
     const transport = nodemailer.createTransport({
       service: 'gmail',
@@ -37,8 +36,8 @@ async function sendMail(recipientList) {
     const mailOptions = {
       from: 'Mass Dialogue <ethangreenhouse57@gmail.com>',
       subject: 'Test Email',
-      text: report,
-      //html: report,
+      text: reportText, // Use the generated report text
+      //html: '<h1>This is a test email from Mass Dialogue</h1>',
     };
 
     // Iterate over the recipient list and send emails
@@ -55,13 +54,14 @@ async function sendMail(recipientList) {
     console.log('All emails sent!');
 
   } catch (error) {
-    console.error('Error generating access token or transport:', error.message);
+    console.error('Error:', error.message);
   }
 }
 
 // Example usage:
 const recipients = [
-  'ethangreenhouse57@gmail.com'
+  'ethangreenhouse57@gmail.com',
+  'ethangreenhouse57+1@gmail.com',
 ];
 
 sendMail(recipients);
