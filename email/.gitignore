@@ -1,0 +1,25 @@
+# General Node.js ignores
+node_modules/
+package-lock.json
+npm-debug.log
+yarn-error.log
+
+# Environment variable file
+.env
+
+# Log files (if you have any)
+*.log
+
+# IDE specific files
+.idea/
+.vscode/
+
+# Temporary files
+tmp/
+temp/
+*~
+*.swp
+*.swo
+
+# macOS specific files
+.DS_Store
