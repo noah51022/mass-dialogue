@@ -116,28 +116,29 @@ function App() {
           </button>
         </div>
 
-        {/* Filter Input */}
-        <div className="filter-input">
-          <input
-            type="text"
-            value={filterKeyword}
-            onChange={(e) => setFilterKeyword(e.target.value)}
-            placeholder="Search posts by keyword..."
-          />
-        </div>
-
-        {/* Dropdown Menu for Sorting */}
-        <div className="sorting-dropdown">
-          <label htmlFor="sortBy">Sort by: </label>
-          <select
-            id="sortBy"
-            value={sortBy}
-            onChange={(e) => setSortBy(e.target.value)}
-          >
-            <option value="created_at">Date</option>
-            <option value="upvotes">Upvotes</option>
-          </select>
-        </div>
+        {/* Conditionally render the search-filter-container based on active tab */}
+        {activeTab === 'forum' && (
+          <div className="search-filter-container">
+            <input
+              type="text"
+              value={filterKeyword}
+              onChange={(e) => setFilterKeyword(e.target.value)}
+              placeholder="Search posts by keyword..."
+              className="search-bar"
+            />
+            <div className="sorting-dropdown">
+              <label htmlFor="sortBy">Sort by: </label>
+              <select
+                id="sortBy"
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value)}
+              >
+                <option value="created_at">Date</option>
+                <option value="upvotes">Upvotes</option>
+              </select>
+            </div>
+          </div>
+        )}
       </header>
 
       <main className="forum-content">

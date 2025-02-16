@@ -11,3 +11,24 @@ code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
 }
+.search-filter-container {
+  display: flex;
+  align-items: center; /* Vertically align them in the center */
+  gap: 10px; /* Space between the search bar and dropdown */
+  padding: 10px;
+}
+
+.search-bar {
+  width: 1000px; /* Wider search bar */
+  padding: 8px;
+  font-size: 16px;
+  border-radius: 8px; /* Rounded corners */
+  border: 1px solid #ccc; /* Optional: Border color */
+}
+
+.sorting-dropdown select {
+  padding: 8px;
+  font-size: 16px;
+  border-radius: 8px; /* Rounded corners */
+  border: 1px solid #ccc; /* Optional: Border color */
+}
