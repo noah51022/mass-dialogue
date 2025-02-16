@@ -55,7 +55,7 @@ button {
 }
 
 button:hover {
-  background-color: #0052a3;
+  background-color: #0051a304;
 }
 
 .posts-list {
@@ -319,7 +319,7 @@ button:hover {
 }
 
 .tab-button:hover {
-  color: #0066cc;
+  color: #0069d1;
 }
 
 .tab-button.active {
