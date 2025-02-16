@@ -291,3 +291,23 @@
     grid-template-columns: 1fr;
   }
 }
+
+.copy-button {
+  margin-top: 15px;
+  padding: 8px 16px;
+  background-color: #4a90e2;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background-color 0.2s ease;
+}
+
+.copy-button:hover {
+  background-color: #357abd;
+}
+
+.copy-button:active {
+  background-color: #2a5f96;
+}

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { supabase } from './supabaseClient.js';
-import ReportPage from './ReportGenerate.js'; // Update import path
+import { supabase } from './supabaseClient';
+import ReportPage from './ReportGenerate'; // Update import path
 import AgentsPage from './components/AgentsPage.jsx';
 import {
   infrastructureTeam,

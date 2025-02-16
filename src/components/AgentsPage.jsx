@@ -146,6 +146,19 @@ function AgentsPage() {
                   <p key={index}>{paragraph}</p>
                 ))}
               </div>
+              <button
+                className="copy-button"
+                onClick={() => {
+                  navigator.clipboard.writeText(infrastructureResult);
+                  const button = document.querySelector('.copy-button');
+                  button.textContent = 'Copied!';
+                  setTimeout(() => {
+                    button.textContent = 'Copy Results';
+                  }, 2000);
+                }}
+              >
+                Copy Results
+              </button>
             </div>
           )}
         </div>
@@ -184,6 +197,19 @@ function AgentsPage() {
                   <p key={index}>{paragraph}</p>
                 ))}
               </div>
+              <button
+                className="copy-button"
+                onClick={() => {
+                  navigator.clipboard.writeText(aiResult);
+                  const button = document.querySelectorAll('.copy-button')[1];
+                  button.textContent = 'Copied!';
+                  setTimeout(() => {
+                    button.textContent = 'Copy Results';
+                  }, 2000);
+                }}
+              >
+                Copy Results
+              </button>
             </div>
           )}
         </div>
