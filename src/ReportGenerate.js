@@ -114,4 +114,12 @@ function ReportPage() {
   );
 }
 
-export default ReportPage; 
+export { ReportPage, generateReport };
+
+export const getReport = () => report; 
+
+function ReportPage() {
+  const generateReport = async () => {
+    setReport(data.choices[0].message.content);
+  };
+}
