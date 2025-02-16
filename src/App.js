@@ -6,18 +6,26 @@ import './App.css';
 function App() {
   const [posts, setPosts] = useState([]);
   const [newPost, setNewPost] = useState('');
-  const [activeTab, setActiveTab] = useState('forum'); // Add this for tab state
-  const [userUpvotedPosts, setUserUpvotedPosts] = useState({}); // Stores upvoted posts per user session
+  const [activeTab, setActiveTab] = useState('forum');
+  const [userUpvotedPosts, setUserUpvotedPosts] = useState({});
+  const [filterKeyword, setFilterKeyword] = useState('');
+  const [sortBy, setSortBy] = useState('created_at'); // Track sorting choice
 
   // 🚀 Fetch Posts from Supabase
   const fetchPosts = async () => {
     const { data, error } = await supabase
       .from('messages')
       .select('*')
-      .order('created_at', { ascending: false });
+      .order(sortBy, { ascending: sortBy === 'created_at' ? false : true }); // Sort by created_at (descending) or upvotes (ascending)
 
     if (error) console.error('Error fetching posts:', error);
-    else setPosts(data);
+    else {
+      // Filter posts based on the filterKeyword
+      const filteredPosts = data.filter((post) =>
+        post.text.toLowerCase().includes(filterKeyword.toLowerCase()) // Case-insensitive search
+      );
+      setPosts(filteredPosts);
+    }
   };
 
   useEffect(() => {
@@ -36,7 +44,7 @@ function App() {
     return () => {
       supabase.removeChannel(postsSubscription);
     };
-  }, []);
+  }, [filterKeyword, sortBy]); // Re-fetch posts when filterKeyword or sortBy changes
 
   // 🚀 Submit a New Post
   const handleSubmitPost = async (e) => {
@@ -94,6 +102,32 @@ function App() {
             onClick={() => setActiveTab('report')}
           >
             Generate Report
+          </button>
+        </div>
+
+        {/* Filter Input */}
+        <div className="filter-input">
+          <input
+            type="text"
+            value={filterKeyword}
+            onChange={(e) => setFilterKeyword(e.target.value)}
+            placeholder="Search posts by keyword..."
+          />
+        </div>
+
+        {/* Sorting Options */}
+        <div className="sort-options">
+          <button
+            onClick={() => setSortBy('created_at')}
+            className={sortBy === 'created_at' ? 'active' : ''}
+          >
+            Sort by Date
+          </button>
+          <button
+            onClick={() => setSortBy('upvotes')}
+            className={sortBy === 'upvotes' ? 'active' : ''}
+          >
+            Sort by Upvotes
           </button>
         </div>
       </header>
