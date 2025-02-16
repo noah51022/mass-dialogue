@@ -127,19 +127,26 @@ function App() {
                     <div className="vote-buttons">
                       <button
                         onClick={() => handleVote(post.id)}
-                        className={`vote-button upvote-button ${userUpvotedPosts[post.id] ? 'active' : ''
-                          }`}
+                        className={`vote-button upvote-button ${
+                          userUpvotedPosts[post.id] ? 'active' : ''
+                        }`}
                         title="Toggle Upvote"
                       >
                         ↑
                       </button>
-                      <span className="vote-count upvote-count">
+                      <span
+                        className="vote-count upvote-count"
+                        style={{
+                          color: userUpvotedPosts[post.id] ? '#2ecc71' : '#888', // Green when upvoted, Gray otherwise
+                          fontWeight: 'bold',
+                        }}
+                      >
                         {post.upvotes}
                       </span>
                     </div>
                   </div>
                   {/* ✅ Comment Section for Each Post */}
-                  <CommentSection postId={post.id} fetchPosts={fetchPosts} />
+                  <CommentSection postId={post.id} />
                 </div>
               ))}
             </div>
@@ -153,7 +160,7 @@ function App() {
 }
 
 // 🚀 COMMENT SYSTEM
-function CommentSection({ postId, fetchPosts }) {
+function CommentSection({ postId }) {
   const [comments, setComments] = useState([]);
   const [newComment, setNewComment] = useState('');
   const [isExpanded, setIsExpanded] = useState(false);
@@ -200,8 +207,7 @@ function CommentSection({ postId, fetchPosts }) {
     if (error) console.error('Error adding comment:', error);
     else {
       setNewComment('');
-      fetchComments(); // Refresh comments
-      fetchPosts(); // Refresh all posts
+      fetchComments(); // ✅ Auto-refresh after comment submission
     }
   };
 
