@@ -4,11 +4,11 @@ import ReportPage from './ReportGenerate'; // Update import path
 import AgentsPage from './components/AgentsPage.jsx';
 import {
   infrastructureTeam,
-  aiResearchTeam,
-  researchTask,
-  aiResearchTask,
-  researchAgent,
-  aiResearchAgent
+  aiTeam,
+  infrastructureTask,
+  aiTask,
+  infrastructureAgent,
+  aiAgent
 } from './routes.js';
 import './App.css';
 

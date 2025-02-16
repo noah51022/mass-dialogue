@@ -1,14 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from './supabaseClient.js';
-import ReportPage from './ReportGenerate.js'; // Update import path
+import ReportPage from './ReportGenerate.js';
 import AgentsPage from './components/AgentsPage.jsx';
 import {
   infrastructureTeam,
-  aiResearchTeam,
-  researchTask,
-  aiResearchTask,
-  researchAgent,
-  aiResearchAgent
+  aiTeam,
+  infrastructureTask,
+  aiTask,
+  infrastructureAgent,
+  aiAgent
 } from './routes.js';
 import './App.css';
 
