@@ -1,70 +1,69 @@
-# Getting Started with Create React App
+**MassDialogue**
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+MassDialogue is a forum platform designed to facilitate discussions about local issues within cities. It leverages AI agents to conduct deep research on specific topics and provides users with the ability to generate summarized reports of their conversations. Built with React.js, OpenAI, and the KaibanJS agent framework, MassDialogue empowers communities to engage in meaningful dialogue with AI-assisted insights.
 
-## Available Scripts
+**Features**
 
-In the project directory, you can run:
+**City-Based Discussions:** Users can join and participate in discussions relevant to their cities.
 
-### `npm start`
+**AI Research Agents:** AI-powered agents help gather and analyze data on discussion topics.
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+**Summarized Reports:** Users can generate AI-generated summaries of ongoing conversations for easy review.
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+**Interactive Forum:** A user-friendly interface for engaging in discussions and sharing insights.
 
-### `npm test`
+**Technologies Used**
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+**React.js:** Frontend framework for building a responsive and interactive user experience.
 
-### `npm run build`
+**OpenAI:** AI-powered language models for research and summarization.
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+**KaibanJS:** Agent-based framework for orchestrating AI-driven insights and automations.
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+**Installation**
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+**Clone the repository:**
 
-### `npm run eject`
+git clone [https://github.com/noah51022/massdialogue](https://github.com/noah51022/mass-dialogue)
+cd massdialogue
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+**Install dependencies:**
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+- npm install
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+**Set up environment variables:**
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+- Create a .env file in the project root and add your API keys for OpenAI and any other necessary services.
 
-## Learn More
+- Start the development server:
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+**npm start**
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+**Usage**
 
-### Code Splitting
+- Join a Discussion: Navigate to your city's forum and start engaging in discussions.
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+- Request AI Research: Use the AI agent feature to gather insights on specific issues.
 
-### Analyzing the Bundle Size
+- Generate Reports: Summarize discussions with AI-generated reports for better understanding and decision-making.
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+**Contribution**
 
-### Making a Progressive Web App
+Contributions are welcome! If you'd like to improve MassDialogue, please follow these steps:
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
+- Fork the repository.
 
-### Advanced Configuration
+- Create a new branch (feature-branch-name).
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
+- Commit your changes.
 
-### Deployment
+- Push the branch and create a pull request.
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
+**License**
 
-### `npm run build` fails to minify
+This project is licensed under the MIT License. See the LICENSE file for more details.
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+**Contact**
+
+For inquiries, feature requests, or issues, please reach out to torres.no@northeastern.edu or open an issue on GitHub.
+
