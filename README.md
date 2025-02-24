@@ -2,6 +2,8 @@
 
 MassDialogue is a forum platform designed to facilitate discussions about local issues within cities. It leverages AI agents to conduct deep research on specific topics and provides users with the ability to generate summarized reports of their conversations. Built with React.js, OpenAI, and the KaibanJS agent framework, MassDialogue empowers communities to engage in meaningful dialogue with AI-assisted insights.
 
+**Check out a demo here -->** https://youtu.be/zkHeqVuY0Nk
+
 **Features**
 
 **City-Based Discussions:** Users can join and participate in discussions relevant to their cities.
