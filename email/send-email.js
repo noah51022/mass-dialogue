@@ -8,6 +8,7 @@ const clientId = process.env.CLIENT_ID;
 const clientSecret = process.env.CLIENT_SECRET;
 const redirectURI = process.env.REDIRECT_URI;
 const refreshToken = process.env.REFRESH_TOKEN;
+const senderEmail = process.env.SENDER_EMAIL;
 
 // Initialize oAuth2Client with correct parameters
 const oAuth2Client = new google.auth.OAuth2(clientId, clientSecret, redirectURI);
@@ -24,7 +25,7 @@ async function sendMail(recipientList) {
       service: 'gmail',
       auth: {
         type: 'OAuth2',
-        user: 'ethangreenhouse57@gmail.com', // Your email address
+        user: senderEmail,
         clientId: clientId,
         clientSecret: clientSecret,
         refreshToken: refreshToken,
@@ -34,7 +35,7 @@ async function sendMail(recipientList) {
 
     // Email options - common for all recipients
     const mailOptions = {
-      from: 'Mass Dialogue <ethangreenhouse57@gmail.com>',
+      from: `Mass Dialogue <${senderEmail}>`,
       subject: 'Test Email',
       text: reportText, // Use the generated report text
       //html: '<h1>This is a test email from Mass Dialogue</h1>',
@@ -58,10 +59,12 @@ async function sendMail(recipientList) {
   }
 }
 
-// Example usage:
-const recipients = [
-  'ethangreenhouse57@gmail.com',
-  'ethangreenhouse57+1@gmail.com',
-];
+// Usage: Set RECIPIENT_LIST as a comma-separated list of emails in .env
+const recipientEnv = process.env.RECIPIENT_LIST;
+if (!recipientEnv) {
+  console.error('Missing RECIPIENT_LIST environment variable.');
+  process.exit(1);
+}
+const recipients = recipientEnv.split(',').map(email => email.trim());
 
 sendMail(recipients);
