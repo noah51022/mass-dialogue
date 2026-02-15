@@ -1,15 +1,12 @@
-// reportGenerator.js
 import { supabase, supabaseMisconfigured } from './supabaseClient.js';
-import OpenAI from 'openai'; // Changed from require to import
+import OpenAI from 'openai';
 
-// Function to generate report
 export const generateReport = async (apiKey) => {
   try {
     if (supabaseMisconfigured) {
       throw new Error('Supabase is not configured. Set REACT_APP_SUPABASE_URL and REACT_APP_SUPABASE_KEY in your .env file.');
     }
 
-    // Fetch messages from Supabase
     const { data: messages, error: fetchError } = await supabase
       .from('messages')
       .select('text, created_at, upvotes')
@@ -21,14 +18,12 @@ export const generateReport = async (apiKey) => {
       throw new Error('No messages found to generate report');
     }
 
-    // Prepare messages for OpenAI
     const messagesText = messages.map(msg => ({
       text: msg.text,
       upvotes: msg.upvotes,
       date: new Date(msg.created_at).toLocaleDateString()
     }));
 
-    // Call OpenAI API
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {

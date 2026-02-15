@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { supabase, supabaseMisconfigured } from './supabaseClient';
-import ReportPage from './ReportGenerate'; // Update import path
+import ReportPage from './ReportGenerate';
 import AgentsPage from './components/AgentsPage.jsx';
 import {
   infrastructureTeam,
@@ -33,7 +33,6 @@ function App() {
   const [filterKeyword, setFilterKeyword] = useState('');
   const [sortBy, setSortBy] = useState('created_at');
 
-  // 🚀 Fetch Posts from Supabase
   const fetchPosts = async () => {
     if (supabaseMisconfigured) return;
     const { data, error } = await supabase
@@ -44,14 +43,12 @@ function App() {
     else {
       let filteredData = data;
 
-      // Apply filter if filterKeyword exists
       if (filterKeyword) {
         filteredData = data.filter((post) =>
           post.text.toLowerCase().includes(filterKeyword.toLowerCase())
         );
       }
 
-      // Sort the data based on sortBy
       if (sortBy === 'created_at') {
         filteredData = filteredData.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
       } else if (sortBy === 'upvotes') {
@@ -67,7 +64,6 @@ function App() {
     if (supabaseMisconfigured) return;
     fetchPosts();
 
-    // ✅ Subscribe to real-time updates for posts
     const postsSubscription = supabase
       .channel('posts-channel')
       .on(
@@ -80,9 +76,8 @@ function App() {
     return () => {
       supabase.removeChannel(postsSubscription);
     };
-  }, [filterKeyword, sortBy]); // Re-fetch posts when filterKeyword or sortBy changes
+  }, [filterKeyword, sortBy]);
 
-  // 🚀 Submit a New Post
   const handleSubmitPost = async (e) => {
     e.preventDefault();
     const trimmed = newPost.trim();
@@ -105,13 +100,12 @@ function App() {
     }
   };
 
-  // 🚀 Handle Upvote Toggle (Upvote/Remove Upvote)
   const handleVote = async (postId) => {
     const post = posts.find((post) => post.id === postId);
     if (!post) return;
 
-    const hasUpvoted = userUpvotedPosts[postId] || false; // Check if user has upvoted
-    const newUpvotes = hasUpvoted ? post.upvotes - 1 : post.upvotes + 1; // Toggle upvote
+    const hasUpvoted = userUpvotedPosts[postId] || false;
+    const newUpvotes = hasUpvoted ? post.upvotes - 1 : post.upvotes + 1;
 
     const { error } = await supabase
       .from('messages')
@@ -122,9 +116,9 @@ function App() {
     else {
       setUserUpvotedPosts((prev) => ({
         ...prev,
-        [postId]: !hasUpvoted, // Toggle local state
+        [postId]: !hasUpvoted,
       }));
-      fetchPosts(); // Refresh posts to update UI
+      fetchPosts();
     }
   };
 
@@ -154,7 +148,6 @@ function App() {
         </div>
 
 
-        {/* Conditionally render the search-filter-container based on active tab */}
         {activeTab === 'forum' && (
           <div className="search-filter-container">
             <input
@@ -228,7 +221,7 @@ function App() {
                           }`}
                         title="Toggle Upvote"
                         style={{
-                          color: userUpvotedPosts[post.id] ? '#2ecc71' : '#888', // Green when upvoted, Gray otherwise
+                          color: userUpvotedPosts[post.id] ? '#2ecc71' : '#888',
                         }}
                       >
                         ↑
@@ -236,14 +229,13 @@ function App() {
                       <span
                         className="vote-count upvote-count"
                         style={{
-                          color: userUpvotedPosts[post.id] ? '#2ecc71' : '#888', // Green when upvoted, Gray otherwise
+                          color: userUpvotedPosts[post.id] ? '#2ecc71' : '#888',
                         }}
                       >
                         {post.upvotes}
                       </span>
                     </div>
                   </div>
-                  {/* ✅ Comment Section for Each Post */}
                   <CommentSection postId={post.id} fetchPosts={fetchPosts} />
                 </div>
               ))}
@@ -259,13 +251,11 @@ function App() {
   );
 }
 
-// 🚀 COMMENT SYSTEM
 function CommentSection({ postId, fetchPosts }) {
   const [comments, setComments] = useState([]);
   const [newComment, setNewComment] = useState('');
   const [isExpanded, setIsExpanded] = useState(false);
 
-  // 🚀 Fetch Comments for the Post
   const fetchComments = async () => {
     if (supabaseMisconfigured) return;
     const { data, error } = await supabase
@@ -282,7 +272,6 @@ function CommentSection({ postId, fetchPosts }) {
     if (supabaseMisconfigured) return;
     fetchComments();
 
-    // ✅ Subscribe to real-time updates for comments
     const commentsSubscription = supabase
       .channel(`comments-channel-${postId}`)
       .on(
@@ -297,7 +286,6 @@ function CommentSection({ postId, fetchPosts }) {
     };
   }, [postId]);
 
-  // 🚀 Add New Comment (Auto-Refresh)
   const handleSubmitComment = async (e) => {
     e.preventDefault();
     const trimmed = newComment.trim();
@@ -315,8 +303,8 @@ function CommentSection({ postId, fetchPosts }) {
     if (error) console.error('Error adding comment:', error);
     else {
       setNewComment('');
-      fetchComments(); // Refresh comments
-      fetchPosts(); // Refresh all posts
+      fetchComments();
+      fetchPosts();
     }
   };
 

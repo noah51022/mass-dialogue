@@ -7,7 +7,6 @@ function ReportPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
   
-  // Define the API key constant
   const apiKey = process.env.REACT_APP_OPENAI_API_KEY;
 
   const handleGenerateReport = async () => {
@@ -15,7 +14,6 @@ function ReportPage() {
     setError(null);
     
     try {
-      // Call the imported generateReport function
       const reportContent = await generateReport(apiKey);
       setReport(reportContent);
       
