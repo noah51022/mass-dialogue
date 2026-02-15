@@ -61,7 +61,6 @@ export const generateReport = async (apiKey) => {
 
     return data.choices[0].message.content;
   } catch (err) {
-    console.error('Full error:', err);
     throw new Error(`Failed to generate report: ${err.message}`);
   }
 };

@@ -12,6 +12,19 @@ import {
 } from './routes.js';
 import './App.css';
 
+const MAX_POST_LENGTH = 5000;
+const MAX_COMMENT_LENGTH = 2000;
+const MAX_SEARCH_LENGTH = 200;
+
+function sanitizeInput(input) {
+  return input
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#x27;');
+}
+
 function App() {
   const [posts, setPosts] = useState([]);
   const [newPost, setNewPost] = useState('');
@@ -70,11 +83,17 @@ function App() {
   // 🚀 Submit a New Post
   const handleSubmitPost = async (e) => {
     e.preventDefault();
-    if (!newPost.trim()) return;
+    const trimmed = newPost.trim();
+    if (!trimmed) return;
+    if (trimmed.length > MAX_POST_LENGTH) {
+      alert(`Post must be under ${MAX_POST_LENGTH} characters.`);
+      return;
+    }
+    const sanitized = sanitizeInput(trimmed);
 
     const { error } = await supabase
       .from('messages')
-      .insert([{ text: newPost, upvotes: 0 }]);
+      .insert([{ text: sanitized, upvotes: 0 }]);
 
     if (error) {
       console.error('Error adding post:', error);
@@ -139,9 +158,10 @@ function App() {
             <input
               type="text"
               value={filterKeyword}
-              onChange={(e) => setFilterKeyword(e.target.value)}
+              onChange={(e) => setFilterKeyword(e.target.value.slice(0, MAX_SEARCH_LENGTH))}
               placeholder="Search posts by keyword..."
               className="search-bar"
+              maxLength={MAX_SEARCH_LENGTH}
             />
             <div className="sorting-dropdown">
               <label htmlFor="sortBy">Sort by: </label>
@@ -168,6 +188,7 @@ function App() {
                   onChange={(e) => setNewPost(e.target.value)}
                   placeholder="What's on your mind?"
                   rows={4}
+                  maxLength={MAX_POST_LENGTH}
                 />
                 <div className="post-form-buttons">
                   <button type="submit">Post Message</button>
@@ -270,11 +291,17 @@ function CommentSection({ postId, fetchPosts }) {
   // 🚀 Add New Comment (Auto-Refresh)
   const handleSubmitComment = async (e) => {
     e.preventDefault();
-    if (!newComment.trim()) return;
+    const trimmed = newComment.trim();
+    if (!trimmed) return;
+    if (trimmed.length > MAX_COMMENT_LENGTH) {
+      alert(`Comment must be under ${MAX_COMMENT_LENGTH} characters.`);
+      return;
+    }
+    const sanitized = sanitizeInput(trimmed);
 
     const { error } = await supabase
       .from('comments')
-      .insert([{ post_id: postId, text: newComment }]);
+      .insert([{ post_id: postId, text: sanitized }]);
 
     if (error) console.error('Error adding comment:', error);
     else {
@@ -315,6 +342,7 @@ function CommentSection({ postId, fetchPosts }) {
               value={newComment}
               onChange={(e) => setNewComment(e.target.value)}
               placeholder="Add a comment..."
+              maxLength={MAX_COMMENT_LENGTH}
             />
             <button type="submit">Comment</button>
           </form>

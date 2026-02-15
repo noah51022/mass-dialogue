@@ -15,14 +15,11 @@ function ReportPage() {
     setError(null);
     
     try {
-      console.log('API Key loaded:', !!apiKey); // Will log true if key exists, false if undefined
-      
       // Call the imported generateReport function
       const reportContent = await generateReport(apiKey);
       setReport(reportContent);
       
     } catch (err) {
-      console.error('Full error:', err); // Debug log
       setError(`Failed to generate report: ${err.message}`);
     } finally {
       setIsLoading(false);
