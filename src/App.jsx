@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { supabase } from './supabaseClient';
+import { supabase, supabaseMisconfigured } from './supabaseClient';
 import ReportPage from './ReportGenerate'; // Update import path
 import AgentsPage from './components/AgentsPage.jsx';
 import {
@@ -35,6 +35,7 @@ function App() {
 
   // 🚀 Fetch Posts from Supabase
   const fetchPosts = async () => {
+    if (supabaseMisconfigured) return;
     const { data, error } = await supabase
       .from('messages')
       .select('*');
@@ -63,6 +64,7 @@ function App() {
   };
 
   useEffect(() => {
+    if (supabaseMisconfigured) return;
     fetchPosts();
 
     // ✅ Subscribe to real-time updates for posts
@@ -179,6 +181,11 @@ function App() {
       </header>
 
       <main className="forum-content">
+        {supabaseMisconfigured && (
+          <div style={{ background: '#fff3cd', color: '#856404', padding: '1rem', borderRadius: '8px', margin: '1rem', textAlign: 'center' }}>
+            Supabase is not configured. Set <code>REACT_APP_SUPABASE_URL</code> and <code>REACT_APP_SUPABASE_KEY</code> in your <code>.env</code> file.
+          </div>
+        )}
         {activeTab === 'forum' ? (
           <>
             <div className="post-form">
@@ -260,6 +267,7 @@ function CommentSection({ postId, fetchPosts }) {
 
   // 🚀 Fetch Comments for the Post
   const fetchComments = async () => {
+    if (supabaseMisconfigured) return;
     const { data, error } = await supabase
       .from('comments')
       .select('*')
@@ -271,6 +279,7 @@ function CommentSection({ postId, fetchPosts }) {
   };
 
   useEffect(() => {
+    if (supabaseMisconfigured) return;
     fetchComments();
 
     // ✅ Subscribe to real-time updates for comments

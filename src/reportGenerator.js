@@ -1,10 +1,14 @@
 // reportGenerator.js
-import { supabase } from './supabaseClient.js';
+import { supabase, supabaseMisconfigured } from './supabaseClient.js';
 import OpenAI from 'openai'; // Changed from require to import
 
 // Function to generate report
 export const generateReport = async (apiKey) => {
   try {
+    if (supabaseMisconfigured) {
+      throw new Error('Supabase is not configured. Set REACT_APP_SUPABASE_URL and REACT_APP_SUPABASE_KEY in your .env file.');
+    }
+
     // Fetch messages from Supabase
     const { data: messages, error: fetchError } = await supabase
       .from('messages')
