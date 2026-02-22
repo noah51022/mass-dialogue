@@ -153,9 +153,9 @@ function AgentsPage() {
               </div>
               <button
                 className="copy-button"
-                onClick={() => {
+                onClick={(e) => {
                   navigator.clipboard.writeText(infrastructureResult);
-                  const button = document.querySelector('.copy-button');
+                  const button = e.currentTarget;
                   button.textContent = 'Copied!';
                   setTimeout(() => {
                     button.textContent = 'Copy Results';
@@ -204,9 +204,9 @@ function AgentsPage() {
               </div>
               <button
                 className="copy-button"
-                onClick={() => {
+                onClick={(e) => {
                   navigator.clipboard.writeText(aiResult);
-                  const button = document.querySelectorAll('.copy-button')[1];
+                  const button = e.currentTarget;
                   button.textContent = 'Copied!';
                   setTimeout(() => {
                     button.textContent = 'Copy Results';

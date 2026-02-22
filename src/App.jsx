@@ -99,7 +99,6 @@ function App() {
       console.error('Error adding post:', error);
     } else {
       setNewPost('');
-      fetchPosts();
     }
   };
 
@@ -122,7 +121,6 @@ function App() {
         ...prev,
         [postId]: !hasUpvoted, // Toggle local state
       }));
-      fetchPosts(); // Refresh posts to update UI
     }
   };
 
@@ -306,8 +304,6 @@ function CommentSection({ postId, fetchPosts }) {
     if (error) console.error('Error adding comment:', error);
     else {
       setNewComment('');
-      fetchComments(); // Refresh comments
-      fetchPosts(); // Refresh all posts
     }
   };
 
