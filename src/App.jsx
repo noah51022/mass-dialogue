@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { supabase } from './supabaseClient';
 import ReportPage from './ReportGenerate'; // Update import path
 import AgentsPage from './components/AgentsPage.jsx';
@@ -34,7 +34,7 @@ function App() {
   const [sortBy, setSortBy] = useState('created_at');
 
   // 🚀 Fetch Posts from Supabase
-  const fetchPosts = async () => {
+  const fetchPosts = useCallback(async () => {
     const { data, error } = await supabase
       .from('messages')
       .select('*');
@@ -60,7 +60,7 @@ function App() {
       setPosts(filteredData);
 
     }
-  };
+  }, [filterKeyword, sortBy]);
 
   useEffect(() => {
     fetchPosts();
@@ -78,7 +78,7 @@ function App() {
     return () => {
       supabase.removeChannel(postsSubscription);
     };
-  }, [filterKeyword, sortBy]); // Re-fetch posts when filterKeyword or sortBy changes
+  }, [fetchPosts]); // Re-fetch posts when fetchPosts changes (i.e. when filterKeyword or sortBy changes)
 
   // 🚀 Submit a New Post
   const handleSubmitPost = async (e) => {
@@ -115,8 +115,10 @@ function App() {
       .update({ upvotes: newUpvotes })
       .eq('id', postId);
 
-    if (error) console.error('Error updating votes:', error);
-    else {
+    if (error) {
+      console.error('Error updating votes:', error);
+      alert('Failed to update vote. Please try again.');
+    } else {
       setUserUpvotedPosts((prev) => ({
         ...prev,
         [postId]: !hasUpvoted, // Toggle local state

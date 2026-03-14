@@ -10,6 +10,13 @@ const redirectURI = process.env.REDIRECT_URI;
 const refreshToken = process.env.REFRESH_TOKEN;
 const senderEmail = process.env.SENDER_EMAIL;
 
+const requiredVars = { CLIENT_ID: clientId, CLIENT_SECRET: clientSecret, REDIRECT_URI: redirectURI, REFRESH_TOKEN: refreshToken, SENDER_EMAIL: senderEmail, OPENAI_API_KEY: process.env.OPENAI_API_KEY };
+const missing = Object.entries(requiredVars).filter(([, v]) => !v).map(([k]) => k);
+if (missing.length > 0) {
+  console.error(`Missing required environment variables: ${missing.join(', ')}`);
+  process.exit(1);
+}
+
 // Initialize oAuth2Client with correct parameters
 const oAuth2Client = new google.auth.OAuth2(clientId, clientSecret, redirectURI);
 oAuth2Client.setCredentials({ refresh_token: refreshToken });
