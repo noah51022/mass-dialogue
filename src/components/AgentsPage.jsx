@@ -20,7 +20,6 @@ function AgentsPage() {
   // Set up event listener using useEffect
   useEffect(() => {
     const handleTaskUpdate = (event) => {
-      console.log('Task update:', event);
       if (event.taskId === infrastructureTask.id) {
         setInfrastructureState(event.status);
       } else if (event.taskId === aiTask.id) {
@@ -67,7 +66,7 @@ function AgentsPage() {
       }
     } catch (error) {
       console.error('Infrastructure workflow error:', error);
-      setError(error.message);
+      setError('Infrastructure analysis failed. Please try again.');
       setInfrastructureState('FAILED');
     } finally {
       setIsLoadingInfrastructure(false);
@@ -95,7 +94,7 @@ function AgentsPage() {
       }
     } catch (error) {
       console.error('AI research workflow error:', error);
-      setError(error.message);
+      setError('AI research failed. Please try again.');
       setAiState('FAILED');
     } finally {
       setIsLoadingAI(false);

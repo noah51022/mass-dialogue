@@ -20,7 +20,8 @@ function ReportPage() {
       setReport(reportContent);
       
     } catch (err) {
-      setError(`Failed to generate report: ${err.message}`);
+      console.error('Report generation error:', err);
+      setError('Failed to generate report. Please try again later.');
     } finally {
       setIsLoading(false);
     }
