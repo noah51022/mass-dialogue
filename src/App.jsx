@@ -16,14 +16,6 @@ const MAX_POST_LENGTH = 5000;
 const MAX_COMMENT_LENGTH = 2000;
 const MAX_SEARCH_LENGTH = 200;
 
-function sanitizeInput(input) {
-  return input
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#x27;');
-}
 
 function App() {
   const [posts, setPosts] = useState([]);
@@ -89,11 +81,9 @@ function App() {
       alert(`Post must be under ${MAX_POST_LENGTH} characters.`);
       return;
     }
-    const sanitized = sanitizeInput(trimmed);
-
     const { error } = await supabase
       .from('messages')
-      .insert([{ text: sanitized, upvotes: 0 }]);
+      .insert([{ text: trimmed, upvotes: 0 }]);
 
     if (error) {
       console.error('Error adding post:', error);
@@ -297,11 +287,9 @@ function CommentSection({ postId, fetchPosts }) {
       alert(`Comment must be under ${MAX_COMMENT_LENGTH} characters.`);
       return;
     }
-    const sanitized = sanitizeInput(trimmed);
-
     const { error } = await supabase
       .from('comments')
-      .insert([{ post_id: postId, text: sanitized }]);
+      .insert([{ post_id: postId, text: trimmed }]);
 
     if (error) console.error('Error adding comment:', error);
     else {

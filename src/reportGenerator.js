@@ -45,10 +45,8 @@ export const generateReport = async (apiKey) => {
     });
 
     if (!response.ok) {
-      const errorData = await response.json().catch(() => null);
-      throw new Error(
-        `OpenAI API failed with status ${response.status}: ${errorData ? JSON.stringify(errorData) : 'No error details available'}`
-      );
+      console.error('OpenAI API error:', response.status);
+      throw new Error('Failed to connect to AI service. Please try again later.');
     }
 
     const data = await response.json();
@@ -59,6 +57,7 @@ export const generateReport = async (apiKey) => {
 
     return data.choices[0].message.content;
   } catch (err) {
-    throw new Error(`Failed to generate report: ${err.message}`);
+    console.error('Report generation error:', err);
+    throw new Error('Failed to generate report. Please try again later.');
   }
 };
