@@ -180,6 +180,9 @@ function App() {
                   rows={4}
                   maxLength={MAX_POST_LENGTH}
                 />
+                <span className={`char-counter ${newPost.length >= MAX_POST_LENGTH * 0.9 ? 'char-counter-warning' : ''}`}>
+                  {newPost.length}/{MAX_POST_LENGTH}
+                </span>
                 <div className="post-form-buttons">
                   <button type="submit">Post Message</button>
                   <button
@@ -323,13 +326,18 @@ function CommentSection({ postId, fetchPosts }) {
           </div>
 
           <form onSubmit={handleSubmitComment} className="comment-form">
-            <input
-              type="text"
-              value={newComment}
-              onChange={(e) => setNewComment(e.target.value)}
-              placeholder="Add a comment..."
-              maxLength={MAX_COMMENT_LENGTH}
-            />
+            <div className="comment-input-wrapper">
+              <input
+                type="text"
+                value={newComment}
+                onChange={(e) => setNewComment(e.target.value)}
+                placeholder="Add a comment..."
+                maxLength={MAX_COMMENT_LENGTH}
+              />
+              <span className={`char-counter ${newComment.length >= MAX_COMMENT_LENGTH * 0.9 ? 'char-counter-warning' : ''}`}>
+                {newComment.length}/{MAX_COMMENT_LENGTH}
+              </span>
+            </div>
             <button type="submit">Comment</button>
           </form>
         </>
